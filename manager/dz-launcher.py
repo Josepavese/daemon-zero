@@ -426,7 +426,18 @@ def api_trigger_image_pull():
             image_name = "josepavese/daemon-zero:latest"
             layers_progress = {}
             
-            for line in client.api.pull(image_name, stream=True, decode=True):
+            # Stream the pull process
+            pull_stream = client.api.pull(image_name, stream=True, decode=True)
+            for line in pull_stream:
+                # Check for explicit errors in the stream
+                if 'error' in line:
+                    error_msg = line.get('error', 'Unknown Docker error')
+                    error_detail = line.get('errorDetail', {}).get('message', '')
+                    full_error = f"{error_msg} {error_detail}".strip()
+                    setup_manager.add_log(f"[ERROR] Pull failed: {full_error}")
+                    setup_manager.finish_task(False, f"Pull Error: {full_error}")
+                    return
+
                 if 'status' in line:
                     status = line['status']
                     layer_id = line.get('id', '')
@@ -439,7 +450,10 @@ def api_trigger_image_pull():
                     
                     # Log meaningful status updates
                     if layer_id:
-                        setup_manager.add_log(f"{status}: {layer_id}")
+                        # Optional: filter noisy status like 'Waiting' or 'Pulling fs layer' 
+                        # but keep 'Downloading' and 'Extracting'
+                        if "Downloading" in status or "Extracting" in status or "Pull complete" in status:
+                            setup_manager.add_log(f"{status}: {layer_id}")
                     elif status not in ['Pulling fs layer', 'Waiting', 'Verifying Checksum']:
                         setup_manager.add_log(f"{status}")
                     
@@ -448,9 +462,21 @@ def api_trigger_image_pull():
                         total_current = sum(c for c, t in layers_progress.values())
                         total_size = sum(t for c, t in layers_progress.values())
                         if total_size > 0:
-                            progress = int((total_current / total_size) * 85) + 5  # 5-90%
+                            # Scale progress from 5% to 90%
+                            progress = int((total_current / total_size) * 85) + 5
                             setup_manager.progress = min(90, progress)
             
+            setup_manager.progress = 92
+            setup_manager.add_log("[INFO] Pull stream finished. Verifying image...")
+            
+            # Verify if image actually exists before tagging
+            try:
+                client.images.get(image_name)
+            except docker.errors.ImageNotFound:
+                setup_manager.add_log("[ERROR] Image not found after pull completion.")
+                setup_manager.finish_task(False, "Image not found after pull. Check internet connection or disk space.")
+                return
+
             setup_manager.progress = 95
             setup_manager.add_log("[INFO] Finalizing and tagging image...")
             
