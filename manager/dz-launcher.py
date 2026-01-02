@@ -5,7 +5,6 @@ import json
 import sys
 from pathlib import Path
 from flask import Flask, render_template, jsonify, request, redirect, url_for, send_file, send_from_directory
-import script_utils
 import dz_manage
 import webview
 from io import StringIO, BytesIO
@@ -18,22 +17,25 @@ import time
 import platform_utils
 import setup_linux
 
-app = Flask(__name__)
-
 def get_resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
     except Exception:
-        base_path = os.path.abspath(".")
+        base_path = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(base_path, relative_path)
+
+app = Flask(__name__, template_folder=get_resource_path("templates"))
 
 # Configuration
 HOME_DIR = Path.home()
 BASE_DATA_DIR = HOME_DIR / "daemon-zero"
 MANAGER_CONFIG_PATH = BASE_DATA_DIR / "manager_config.json" # Store in daemon-zero dir for persistence
-app.template_folder = get_resource_path("templates")
+# app.template_folder = get_resource_path("templates")
+print(f"[DEBUG] Script dir: {os.path.dirname(os.path.abspath(__file__))}")
+print(f"[DEBUG] Template folder: {app.template_folder}")
+print(f"[DEBUG] Template exists: {os.path.exists(os.path.join(app.template_folder, 'index.html'))}")
 
 def load_manager_config():
     if not MANAGER_CONFIG_PATH.exists():
@@ -144,6 +146,66 @@ def index():
 def api_status():
     return jsonify(check_system())
 
+# Setup State Management
+class SetupManager:
+    def __init__(self, log_file):
+        self.logs = []
+        self.is_running = False
+        self.progress = 0
+        self.status_text = "Ready"
+        self.error = None
+        self.lock = threading.Lock()
+        self.log_file = Path(log_file)
+        print(f"[DEBUG] SetupManager log file: {self.log_file}")
+
+    def add_log(self, message):
+        with self.lock:
+            self.logs.append(message)
+            # Limit memory log size
+            if len(self.logs) > 500:
+                self.logs.pop(0)
+            
+            # Write to file
+            try:
+                self.log_file.parent.mkdir(parents=True, exist_ok=True)
+                with open(self.log_file, "a") as f:
+                    f.write(message + "\n")
+            except Exception as e:
+                print(f"[ERROR] Failed to write to {self.log_file}: {e}")
+
+    def start_task(self, name):
+        with self.lock:
+            self.is_running = True
+            self.status_text = name
+            self.progress = 0
+            self.error = None
+            self.add_log(f"\n--- Starting: {name} ---")
+
+    def finish_task(self, success, message):
+        with self.lock:
+            self.is_running = False
+            self.status_text = "Finished" if success else "Failed"
+            self.progress = 100 if success else self.progress
+            if not success:
+                self.error = message
+            self.add_log(f"--- Result: {'SUCCESS' if success else 'ERROR'}: {message} ---")
+
+    def get_status(self):
+        with self.lock:
+            return {
+                "logs": self.logs,
+                "is_running": self.is_running,
+                "progress": self.progress,
+                "status_text": self.status_text,
+                "error": self.error
+            }
+
+setup_manager = SetupManager(BASE_DATA_DIR / "setup.log")
+
+@app.route('/api/setup/status')
+def api_setup_status_logs():
+    return jsonify(setup_manager.get_status())
+
 @app.route('/api/setup/install_docker', methods=['POST'])
 def api_install_docker():
     data = request.json
@@ -151,34 +213,72 @@ def api_install_docker():
     if not password:
         return jsonify({"success": False, "message": "Password required"})
 
-    # Use the new Python-based installer
-    if platform_utils.is_linux():
-        success, message = setup_linux.install_docker_ubuntu(password)
-        if success:
-            # Also setup base directories
-            setup_linux.setup_base_dirs(BASE_DATA_DIR)
-            return jsonify({"success": True, "message": message})
+    if setup_manager.is_running:
+        return jsonify({"success": False, "message": "Setup already in progress"})
+
+    def run_install():
+        setup_manager.start_task("Docker Installation")
+        if platform_utils.is_linux():
+            success, message = setup_linux.install_docker_ubuntu(password, logger=setup_manager.add_log)
+            if success:
+                setup_manager.add_log("[INFO] Also setting up base directories...")
+                setup_linux.setup_base_dirs(BASE_DATA_DIR, logger=setup_manager.add_log)
+            setup_manager.finish_task(success, message)
         else:
-            return jsonify({"success": False, "message": message})
-    
-    return jsonify({"success": False, "message": "Platform not supported for auto-install yet."})
+            setup_manager.finish_task(False, "Platform not supported for auto-install yet.")
+
+    threading.Thread(target=run_install, daemon=True).start()
+    return jsonify({"success": True, "message": "Installation started"})
 
 @app.route('/api/setup/fix_group', methods=['POST'])
 def api_fix_group():
     data = request.json
     password = data.get('password')
-    if platform_utils.is_linux():
-        success, message = setup_linux.add_user_to_docker_group(password)
-        return jsonify({"success": success, "message": message})
-    
-    return jsonify({"success": False, "message": "Platform not supported for auto-group-fix."})
+    if not password:
+        return jsonify({"success": False, "message": "Password required"})
+
+    if setup_manager.is_running:
+        return jsonify({"success": False, "message": "Setup already in progress"})
+
+    def run_fix():
+        setup_manager.start_task("Fix User Group")
+        if platform_utils.is_linux():
+            success, message = setup_linux.add_user_to_docker_group(password, logger=setup_manager.add_log)
+            setup_manager.finish_task(success, message)
+        else:
+            setup_manager.finish_task(False, "Platform not supported for auto-group-fix.")
+
+    threading.Thread(target=run_fix, daemon=True).start()
+    return jsonify({"success": True, "message": "Group fix started"})
+
+@app.route('/api/setup/dirs', methods=['POST'])
+def api_setup_dirs():
+    if setup_manager.is_running:
+        return jsonify({"success": False, "message": "Setup already in progress"})
+
+    def run_dirs():
+        setup_manager.start_task("Directory Setup")
+        success, message = setup_linux.setup_base_dirs(BASE_DATA_DIR, logger=setup_manager.add_log)
+        setup_manager.finish_task(success, message)
+
+    threading.Thread(target=run_dirs, daemon=True).start()
+    return jsonify({"success": True, "message": "Directory setup started"})
 
 @app.route('/api/setup/create_shortcut', methods=['POST'])
 def api_create_shortcut():
-    if platform_utils.is_linux():
-        success, message = setup_linux.create_desktop_shortcut()
-        return jsonify({"success": success, "message": message})
-    return jsonify({"success": False, "message": "Shortcut creation only supported on Linux for now."})
+    if setup_manager.is_running:
+        return jsonify({"success": False, "message": "Setup already in progress"})
+        
+    def run_shortcut():
+        setup_manager.start_task("Create Shortcut")
+        if platform_utils.is_linux():
+            success, message = setup_linux.create_desktop_shortcut(logger=setup_manager.add_log)
+            setup_manager.finish_task(success, message)
+        else:
+            setup_manager.finish_task(False, "Shortcut creation only supported on Linux.")
+
+    threading.Thread(target=run_shortcut, daemon=True).start()
+    return jsonify({"success": True, "message": "Shortcut creation started"})
 
 @app.route('/api/manager_config', methods=['GET', 'POST'])
 def api_manager_config():

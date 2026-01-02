@@ -440,6 +440,39 @@
             animation: spin 1s linear infinite;
         }
 
+        /* Setup Logs */
+        .setup-logs {
+            background-color: #000;
+            color: #0f0;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            font-family: monospace;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 200px;
+            text-align: left;
+            font-size: 0.75rem;
+            margin-top: 1rem;
+            /* Thin scrollbar */
+            scrollbar-width: thin;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: var(--border);
+            border-radius: 1rem;
+            height: 10px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
         @keyframes spin {
             to {
                 transform: rotate(360deg);
@@ -450,13 +483,10 @@
 
 <body>
 
-    <!-- Setup Wizard Overlay -->
-    <div id="wizardOverlay">
-        <!-- ... existing content ... -->
-    </div>
-
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Setup Wizard Overlay -->
     <div id="wizardOverlay">
         <div class="wizard-card">
             <div class="step-icon">🚀</div>
@@ -475,8 +505,13 @@
 
             <button id="setupBtn" class="btn btn-primary" style="width:100%; justify-content:center; padding: 1rem;"
                 onclick="startSetup()">Inizia Configurazione</button>
+
             <div id="setupLoader" style="display:none; margin-top: 1rem;">
-                Installazione in corso... per favore attendi.
+                <div class="progress-bar-container">
+                    <div id="setupProgressBar" class="progress-bar"></div>
+                </div>
+                <div id="setupStatusText" style="margin-top:0.5rem; font-size:0.875rem;">Preparazione...</div>
+                <div id="setupLogs" class="setup-logs"></div>
             </div>
         </div>
     </div>
@@ -733,39 +768,79 @@
             const btn = document.getElementById('setupBtn');
             btn.disabled = true;
             document.getElementById('setupLoader').style.display = 'block';
+            document.getElementById('setupStatusText').innerText = "Inizio configurazione...";
+            document.getElementById('setupLogs').innerText = "";
 
             try {
+                let endpoint = '/api/setup/dirs';
                 if (!systemStatus.docker_installed) {
-                    const res = await fetch('/api/setup/install_docker', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ password })
-                    });
-                    const data = await res.json();
-                    if (!data.success) throw new Error(data.message);
+                    endpoint = '/api/setup/install_docker';
+                } else if (!systemStatus.user_in_group) {
+                    endpoint = '/api/setup/fix_group';
                 }
 
-                if (!systemStatus.user_in_group) {
-                    await fetch('/api/setup/fix_group', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ password })
-                    });
-                    alert("Utente aggiunto al gruppo Docker. Riavviare il computer se necessario.");
-                }
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
 
-                const resStatus = await fetch('/api/status');
-                systemStatus = await resStatus.json();
-                updateWizardStatus();
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message);
 
-                if (systemStatus.ready) {
-                    location.reload();
-                }
+                // Start polling
+                pollSetupStatus();
+
             } catch (e) {
-                alert("Errore installazione: " + e.message);
-            } finally {
+                alert("Errore: " + e.message);
                 btn.disabled = false;
                 document.getElementById('setupLoader').style.display = 'none';
+            }
+        }
+
+        async function pollSetupStatus() {
+            try {
+                const res = await fetch('/api/setup/status');
+                const data = await res.json();
+
+                const logsEl = document.getElementById('setupLogs');
+                const progressEl = document.getElementById('setupProgressBar');
+                const statusEl = document.getElementById('setupStatusText');
+
+                if (logsEl) {
+                    logsEl.innerText = data.logs.join('\n');
+                    logsEl.scrollTop = logsEl.scrollHeight;
+                }
+
+                if (progressEl) progressEl.style.width = data.progress + '%';
+                if (statusEl) statusEl.innerText = data.status_text;
+
+                if (data.is_running) {
+                    setTimeout(pollSetupStatus, 1000);
+                } else {
+                    // Finished
+                    if (data.error) {
+                        alert("Errore durante la configurazione: " + data.error);
+                        document.getElementById('setupBtn').disabled = false;
+                    } else {
+                        // Success - refresh status and check if ready
+                        const resStatus = await fetch('/api/status');
+                        systemStatus = await resStatus.json();
+                        updateWizardStatus();
+
+                        if (systemStatus.ready) {
+                            showToast("Configurazione completata!", "success");
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            // Might need another step (e.g. Docker installed, now fix group)
+                            document.getElementById('setupBtn').disabled = false;
+                            document.getElementById('setupLoader').style.display = 'none';
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Polling error", e);
+                setTimeout(pollSetupStatus, 2000);
             }
         }
 
