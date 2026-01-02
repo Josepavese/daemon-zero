@@ -15,6 +15,7 @@ import mimetypes
 import zipfile
 import shutil
 import time
+import docker
 from pathlib import Path
 from io import StringIO, BytesIO
 from flask import Flask, render_template, jsonify, request, send_file
@@ -416,52 +417,56 @@ def api_trigger_image_pull():
         try:
             setup_manager.add_log("[INFO] Pulling josepavese/daemon-zero:latest from Docker Hub...")
             setup_manager.add_log("[INFO] This may take several minutes depending on your connection.")
-            setup_manager.progress = 10  # Show initial progress
+            setup_manager.progress = 5
             
-            # Pull the image (this will take time)
-            process = subprocess.Popen(
-                ["docker", "pull", "josepavese/daemon-zero:latest"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                bufsize=1
-            )
+            # Use Docker SDK for real progress tracking
+            client = docker.from_env()
             
-            # Stream output and update progress
-            line_count = 0
-            for line in process.stdout:
-                if line.strip():
-                    setup_manager.add_log(line.strip())
-                    line_count += 1
-                    # Gradually increase progress (cap at 90% until completion)
-                    if line_count % 5 == 0 and setup_manager.progress < 90:
-                        setup_manager.progress = min(90, setup_manager.progress + 5)
+            # Pull with progress tracking
+            image_name = "josepavese/daemon-zero:latest"
+            layers_progress = {}
             
-            process.wait()
-            
-            if process.returncode != 0:
-                setup_manager.finish_task(False, "Failed to pull image. Please check your internet connection.")
-                return
+            for line in client.api.pull(image_name, stream=True, decode=True):
+                if 'status' in line:
+                    status = line['status']
+                    layer_id = line.get('id', '')
+                    
+                    # Track progress for each layer
+                    if 'progressDetail' in line and line['progressDetail']:
+                        detail = line['progressDetail']
+                        if 'current' in detail and 'total' in detail:
+                            layers_progress[layer_id] = (detail['current'], detail['total'])
+                    
+                    # Log meaningful status updates
+                    if layer_id:
+                        setup_manager.add_log(f"{status}: {layer_id}")
+                    elif status not in ['Pulling fs layer', 'Waiting', 'Verifying Checksum']:
+                        setup_manager.add_log(f"{status}")
+                    
+                    # Calculate overall progress
+                    if layers_progress:
+                        total_current = sum(c for c, t in layers_progress.values())
+                        total_size = sum(t for c, t in layers_progress.values())
+                        if total_size > 0:
+                            progress = int((total_current / total_size) * 85) + 5  # 5-90%
+                            setup_manager.progress = min(90, progress)
             
             setup_manager.progress = 95
+            setup_manager.add_log("[INFO] Tagging image as 'daemon-zero'...")
             
             # Tag the image
-            setup_manager.add_log("[INFO] Tagging image as 'daemon-zero'...")
-            tag_result = subprocess.run(
-                ["docker", "tag", "josepavese/daemon-zero:latest", "daemon-zero"],
-                capture_output=True, text=True
-            )
-            
-            if tag_result.returncode != 0:
-                setup_manager.finish_task(False, f"Failed to tag image: {tag_result.stderr}")
-                return
+            image = client.images.get(image_name)
+            image.tag('daemon-zero', 'latest')
             
             setup_manager.progress = 100
             setup_manager.finish_task(True, "Docker image downloaded and ready!")
             
+        except docker.errors.APIError as e:
+            logger.exception("Docker API error during image pull")
+            setup_manager.finish_task(False, f"Failed to pull image: {str(e)}")
         except Exception as e:
-            logger.exception("Unexpected error during image pull.")
-            setup_manager.finish_task(False, f"Crash: {str(e)}")
+            logger.exception("Unexpected error during image pull")
+            setup_manager.finish_task(False, f"Error: {str(e)}")
 
     threading.Thread(target=run_worker, daemon=True).start()
     return jsonify({"success": True, "message": "Image pull worker spawned."})
