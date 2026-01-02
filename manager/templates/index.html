@@ -777,6 +777,8 @@
                     endpoint = '/api/setup/install_docker';
                 } else if (!systemStatus.user_in_group) {
                     endpoint = '/api/setup/fix_group';
+                } else if (!systemStatus.docker_image_ready) {
+                    endpoint = '/api/setup/pull_image';
                 }
 
                 const res = await fetch(endpoint, {
@@ -839,9 +841,15 @@
                             showToast("Configurazione completata!", "success");
                             setTimeout(() => location.reload(), 1500);
                         } else {
-                            // Might need another step (e.g. Docker installed, now fix group)
-                            document.getElementById('setupBtn').disabled = false;
-                            document.getElementById('setupLoader').style.display = 'none';
+                            // Check if we just fixed group permissions - need page reload
+                            if (systemStatus.docker_installed && !systemStatus.user_in_group) {
+                                showToast("Applicazione modifiche in corso...", "info");
+                                setTimeout(() => location.reload(), 2000);
+                            } else {
+                                // Might need another step (e.g. Docker installed, now pull image)
+                                document.getElementById('setupBtn').disabled = false;
+                                document.getElementById('setupLoader').style.display = 'none';
+                            }
                         }
                     }
                 }

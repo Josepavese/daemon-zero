@@ -118,6 +118,19 @@ def save_manager_config(config: dict):
     except Exception as e:
         logger.error(f"Failed to save manager config: {e}")
 
+def check_docker_image() -> bool:
+    """
+    Check if the daemon-zero Docker image is available locally.
+    """
+    try:
+        res = subprocess.run(
+            ["docker", "images", "-q", "daemon-zero"],
+            capture_output=True, text=True, check=True
+        )
+        return bool(res.stdout.strip())
+    except (subprocess.SubprocessError, FileNotFoundError):
+        return False
+
 def check_system() -> dict:
     """
     Perform system checks to determine if Docker and user permissions are correctly configured.
@@ -126,6 +139,7 @@ def check_system() -> dict:
         "docker_installed": False,
         "user_in_group": False,
         "base_dir_ready": False,
+        "docker_image_ready": False,
         "ready": False
     }
     
@@ -147,8 +161,17 @@ def check_system() -> dict:
     # 3. Directory Readiness
     status["base_dir_ready"] = BASE_DATA_DIR.exists()
     
+    # 4. Docker Image Check
+    if status["docker_installed"] and status["user_in_group"]:
+        status["docker_image_ready"] = check_docker_image()
+    
     # Aggregate status
-    status["ready"] = status["docker_installed"] and status["user_in_group"] and status["base_dir_ready"]
+    status["ready"] = (
+        status["docker_installed"] and 
+        status["user_in_group"] and 
+        status["base_dir_ready"] and
+        status["docker_image_ready"]
+    )
     return status
 
 class ManageArgs:
@@ -380,6 +403,54 @@ def api_trigger_dir_setup():
     t = threading.Thread(target=run_worker, daemon=True)
     t.start()
     return jsonify({"success": True, "message": "Directory setup worker spawned."})
+
+@app.route('/api/setup/pull_image', methods=['POST'])
+def api_trigger_image_pull():
+    """Asynchronously pull the daemon-zero Docker image from Docker Hub."""
+    if setup_manager.is_running:
+        return jsonify({"success": False, "message": "A setup task is already in progress."}), 409
+
+    setup_manager.prepare_setup("Downloading Docker Image")
+
+    def run_worker():
+        try:
+            setup_manager.add_log("[INFO] Pulling josepavese/daemon-zero:latest from Docker Hub...")
+            setup_manager.add_log("[INFO] This may take several minutes depending on your connection.")
+            
+            # Pull the image
+            result = subprocess.run(
+                ["docker", "pull", "josepavese/daemon-zero:latest"],
+                capture_output=True, text=True
+            )
+            
+            if result.returncode != 0:
+                setup_manager.finish_task(False, f"Failed to pull image: {result.stderr}")
+                return
+            
+            # Log pull output
+            for line in result.stdout.splitlines():
+                if line.strip():
+                    setup_manager.add_log(line)
+            
+            # Tag the image
+            setup_manager.add_log("[INFO] Tagging image as 'daemon-zero'...")
+            tag_result = subprocess.run(
+                ["docker", "tag", "josepavese/daemon-zero:latest", "daemon-zero"],
+                capture_output=True, text=True
+            )
+            
+            if tag_result.returncode != 0:
+                setup_manager.finish_task(False, f"Failed to tag image: {tag_result.stderr}")
+                return
+            
+            setup_manager.finish_task(True, "Docker image downloaded and ready!")
+            
+        except Exception as e:
+            logger.exception("Unexpected error during image pull.")
+            setup_manager.finish_task(False, f"Crash: {str(e)}")
+
+    threading.Thread(target=run_worker, daemon=True).start()
+    return jsonify({"success": True, "message": "Image pull worker spawned."})
 
 @app.route('/api/setup/create_shortcut', methods=['POST'])
 def api_trigger_shortcut_creation():
