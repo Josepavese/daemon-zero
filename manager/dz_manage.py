@@ -119,16 +119,16 @@ def start_agent(args):
     if safe_name == "default":
         # Default instance
         if args.ephemeral:
-             data_mounts = [
-                f"-v{BASE_DATA_DIR}/config:/dz/config",
-                f"-v{BASE_DATA_DIR}/agents:/dz/agents",
+            data_mounts = [
+                "-v", f"{BASE_DATA_DIR}/config:/dz/config",
+                "-v", f"{BASE_DATA_DIR}/agents:/dz/agents",
             ]
         else:
             data_mounts = [
-                f"-v{BASE_DATA_DIR}/config:/dz/config",
-                f"-v{BASE_DATA_DIR}/agents:/dz/agents",
-                f"-v{BASE_DATA_DIR}/memory:/dz/memory",
-                f"-v{BASE_DATA_DIR}/knowledge:/dz/knowledge"
+                "-v", f"{BASE_DATA_DIR}/config:/dz/config",
+                "-v", f"{BASE_DATA_DIR}/agents:/dz/agents",
+                "-v", f"{BASE_DATA_DIR}/memory:/dz/memory",
+                "-v", f"{BASE_DATA_DIR}/knowledge:/dz/knowledge"
             ]
         # Ensure base dirs exist
         for d in ["config", "agents", "memory", "knowledge"]:
@@ -149,21 +149,21 @@ def start_agent(args):
 
         if args.ephemeral:
             data_mounts = [
-                f"-v{instance_path}/config:/dz/config",
-                f"-v{instance_path}/agents:/dz/agents",
-                f"-v{instance_path}/config/.env:/dz/.env",
-                f"-v{instance_path}/config/tmp:/dz/tmp",
-                f"-v{instance_path}/workspace:/dz/usr/projects"
+                "-v", f"{instance_path}/config:/dz/config",
+                "-v", f"{instance_path}/agents:/dz/agents",
+                "-v", f"{instance_path}/config/.env:/dz/.env",
+                "-v", f"{instance_path}/config/tmp:/dz/tmp",
+                "-v", f"{instance_path}/workspace:/dz/usr/projects"
             ]
         else:
             data_mounts = [
-                f"-v{instance_path}/config:/dz/config",
-                f"-v{instance_path}/agents:/dz/agents",
-                f"-v{instance_path}/memory:/dz/memory",
-                f"-v{instance_path}/knowledge:/dz/knowledge",
-                f"-v{instance_path}/config/.env:/dz/.env",
-                f"-v{instance_path}/config/tmp:/dz/tmp",
-                f"-v{instance_path}/workspace:/dz/usr/projects"
+                "-v", f"{instance_path}/config:/dz/config",
+                "-v", f"{instance_path}/agents:/dz/agents",
+                "-v", f"{instance_path}/memory:/dz/memory",
+                "-v", f"{instance_path}/knowledge:/dz/knowledge",
+                "-v", f"{instance_path}/config/.env:/dz/.env",
+                "-v", f"{instance_path}/config/tmp:/dz/tmp",
+                "-v", f"{instance_path}/workspace:/dz/usr/projects"
             ]
 
 
