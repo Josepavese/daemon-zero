@@ -1,0 +1,6 @@
+flask[async]==3.0.3
+docker==7.1.0
+python-dotenv==1.1.0
+pywebview==5.1
+psutil>=7.0.0
+platformdirs>=4.0.0
