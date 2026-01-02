@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DaemonZero Manager</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --sidebar-bg: #1e293b;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --border: #334155;
+            --overlay: rgba(15, 23, 42, 0.9);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+        }
+
+        .brand {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .instance-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .instance-item {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .instance-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .instance-item.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-muted);
+        }
+
+        .status-dot.running {
+            background-color: var(--success);
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: var(--border);
+            color: var(--text-main);
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            height: calc(100vh - 150px);
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            /* Prevent expansion */
+            height: 100%;
+            /* Fill the grid cell */
+        }
+
+        .card-header {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            flex-shrink: 0;
+            /* Header shouldn't shrink */
+        }
+
+        textarea {
+            flex: 1;
+            background-color: #0f172a;
+            border: 1px solid var(--border);
+            color: #bdc3c7;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            font-family: monospace;
+            resize: none;
+            margin-bottom: 1rem;
+        }
+
+        .logs-container {
+            background-color: #000;
+            color: #0f0;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            font-family: monospace;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+            /* Critical for flex scrolling */
+            font-size: 0.85rem;
+        }
+
+        /* Modal & Overlay */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 0.5rem;
+            min-width: 400px;
+            max-width: 600px;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0.625rem;
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            color: white;
+            border-radius: 0.25rem;
+        }
+
+        /* Wizard */
+        #wizardOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--overlay);
+            z-index: 2000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .wizard-card {
+            background: var(--card-bg);
+            padding: 3rem;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .step-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .step-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+            font-size: 0.875rem;
+        }
+
+        .check {
+            color: var(--success);
+        }
+
+        .cross {
+            color: var(--danger);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+
+        .tab {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        /* File Browser */
+        .file-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .file-table th,
+        .file-table td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .file-table th {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .file-row:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+        }
+
+        .breadcrumb {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .breadcrumb span {
+            color: var(--primary);
+            cursor: pointer;
+        }
+
+        .breadcrumb span:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb span:hover {
+            text-decoration: underline;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .toast {
+            background-color: var(--card-bg);
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            min-width: 250px;
+            color: white;
+            animation: slideIn 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .toast.success {
+            border-color: var(--success);
+        }
+
+        .toast.error {
+            border-color: var(--danger);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-left-color: white;
+            border-radius: 50%;
+            width: 1rem;
+            height: 1rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Setup Wizard Overlay -->
+    <div id="wizardOverlay">
+        <!-- ... existing content ... -->
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+    <div id="wizardOverlay">
+        <div class="wizard-card">
+            <div class="step-icon">🚀</div>
+            <h2>Benvenuto in DaemonZero</h2>
+            <p style="color: var(--text-muted)">Sembra che il tuo sistema non sia ancora pronto per far girare gli
+                agenti. Sistemiamo tutto in un attimo.</p>
+
+            <div id="setupStatus" class="step-status">
+                <!-- Dynamic status list -->
+            </div>
+
+            <div id="passwordArea" class="input-group" style="display:none;">
+                <label>Inserisci Password di Sistema (sudo)</label>
+                <input type="password" id="sudoPassword" placeholder="La password non verrà salvata">
+            </div>
+
+            <button id="setupBtn" class="btn btn-primary" style="width:100%; justify-content:center; padding: 1rem;"
+                onclick="startSetup()">Inizia Configurazione</button>
+            <div id="setupLoader" style="display:none; margin-top: 1rem;">
+                Installazione in corso... per favore attendi.
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand">
+            DaemonZero Manager
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-label">Management</div>
+            <button class="btn btn-primary" style="width:100%; margin-bottom: 0.5rem;" onclick="showAddModal()">+ New
+                Instance</button>
+            <button class="btn btn-secondary" style="width:100%;" onclick="showGlobalSettings()">⚙️ Global
+                Settings</button>
+        </div>
+
+        <div class="nav-section" style="flex:1; display:flex; flex-direction:column;">
+            <div class="nav-label">Instances</div>
+            <div class="instance-list" id="instanceList">
+                <!-- List items injected here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="header">
+            <div class="title" id="currentTitle">Select an Instance</div>
+            <div class="actions" id="mainActions" style="display:none;">
+                <button class="btn btn-primary" id="startBtn" onclick="startInstance()">Start</button>
+                <button class="btn btn-secondary" id="stopBtn" onclick="stopInstance()">Stop</button>
+                <button class="btn btn-danger" onclick="deleteInstance()">Delete</button>
+                <button class="btn btn-secondary" onclick="openFileBrowser()">Browse Files</button>
+                <a id="openLink" href="#" target="_blank" class="btn btn-secondary" style="text-decoration:none;">Open
+                    WebUI</a>
+            </div>
+        </div>
+
+        <div class="grid" id="mainGrid" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    Configuration
+                    <button class="btn btn-primary" onclick="saveConfig()">Save</button>
+                </div>
+
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab(this, 'env')">.env (Keys)</div>
+                    <div class="tab" onclick="switchTab(this, 'models')">Models</div>
+                    <div class="tab" id="settingsTab" onclick="switchTab(this, 'settings')">settings.json (Raw)</div>
+                </div>
+
+                <div id="envEditorView" class="editor-view">
+                    <textarea id="envEditor" style="width:100%; height: 100%;"></textarea>
+                </div>
+
+                <div id="modelsEditorView" class="editor-view" style="display:none; padding-top: 1rem;">
+                    <div class="input-group">
+                        <label>Chat Model (Provider / Name)</label>
+                        <div style="display:flex; gap:0.5rem;">
+                            <input type="text" id="model_chat_prov" placeholder="groq" style="width:30%">
+                            <input type="text" id="model_chat_name" placeholder="moonshotai/kimi-k2-instruct-0905">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Utility Model (Provider / Name)</label>
+                        <div style="display:flex; gap:0.5rem;">
+                            <input type="text" id="model_util_prov" placeholder="groq" style="width:30%">
+                            <input type="text" id="model_util_name" placeholder="openai/gpt-oss-120b">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Browser Model (Provider / Name)</label>
+                        <div style="display:flex; gap:0.5rem;">
+                            <input type="text" id="model_browser_prov" placeholder="groq" style="width:30%">
+                            <input type="text" id="model_browser_name" placeholder="openai/gpt-oss-120b">
+                        </div>
+                    </div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem;">
+                        Note: Cambiare queste impostazioni aggiornerà automaticamente il file settings.json.
+                    </p>
+                </div>
+
+                <div id="settingsEditorView" class="editor-view" style="display:none;">
+                    <textarea id="settingsEditor" style="width:100%; height: 100%;"></textarea>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    Logs
+                    <div style="display:flex; gap: 0.5rem;">
+                        <button class="btn btn-secondary" onclick="refreshLogs()">Refresh</button>
+                    </div>
+                </div>
+                <div class="logs-container" id="logsView"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Modal -->
+    <div class="modal" id="addModal">
+        <div class="modal-content">
+            <h3>Nuova Istanza</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem;">Verranno utilizzate le chiavi
+                API e i Modelli di default impostati nei Global Settings.</p>
+            <div class="input-group">
+                <label>Nome Istanza</label>
+                <input type="text" id="newInstanceName" placeholder="e.g. jarvis-alpha">
+            </div>
+            <div class="actions" style="justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeAddModal()">Annulla</button>
+                <button class="btn btn-primary" onclick="createInstance()">Crea e Avvia</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Settings Modal -->
+    <div class="modal" id="globalSettingsModal">
+        <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
+            <h3>Global Settings</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem;">Valori predefiniti per tutte
+                le NUOVE istanze.</p>
+
+            <div class="nav-label">API Keys</div>
+            <div id="globalKeysArea"></div>
+
+            <div class="nav-label" style="margin-top:2rem;">Model Mappings</div>
+            <div class="input-group">
+                <label>Default Chat Model (Provider / Name)</label>
+                <div style="display:flex; gap:0.5rem;">
+                    <input type="text" id="g_chat_prov" placeholder="groq">
+                    <input type="text" id="g_chat_name" placeholder="llama-3.3-70b-versatile">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Default Utility Model (Provider / Name)</label>
+                <div style="display:flex; gap:0.5rem;">
+                    <input type="text" id="g_util_prov" placeholder="groq">
+                    <input type="text" id="g_util_name" placeholder="llama-3.1-8b-instant">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Default Browser Model (Provider / Name)</label>
+                <div style="display:flex; gap:0.5rem;">
+                    <input type="text" id="g_browser_prov" placeholder="groq">
+                    <input type="text" id="g_browser_name" placeholder="llama-3.1-8b-instant">
+                </div>
+            </div>
+
+            <div class="actions" style="justify-content: flex-end; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="closeGlobalSettings()">Chiudi</button>
+                <button class="btn btn-primary" onclick="saveGlobalSettings()">Salva Cambiamenti</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Browser Modal -->
+    <div class="modal" id="fileModal">
+        <div class="modal-content"
+            style="width: 800px; max-width: 90vw; height: 80vh; display: flex; flex-direction: column;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+                <h3 style="margin:0">Workspace Browser</h3>
+                <div style="display:flex; gap:0.5rem;">
+                    <button class="btn btn-primary" onclick="downloadZip()">Download ZIP</button>
+                    <button class="btn btn-secondary" onclick="closeFileBrowser()">Close</button>
+                </div>
+            </div>
+
+            <div class="breadcrumb" id="fileBreadcrumb">
+                <!-- Injected via JS -->
+            </div>
+
+            <div style="flex:1; overflow-y: auto; border: 1px solid var(--border); border-radius: 0.5rem;">
+                <table class="file-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px">Type</th>
+                            <th>Name</th>
+                            <th>Size</th>
+                            <th style="width: 80px">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fileListBody">
+                        <!-- Injected via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="application/json" id="data-system-status">
+        {{ system_status | tojson | safe }}
+    </script>
+    <script type="application/json" id="data-global-config">
+        {{ manager_config | tojson | safe }}
+    </script>
+
+    <script>
+        let currentInstance = null;
+        let instances = [];
+        let systemStatus = {};
+        let globalConfig = {};
+
+        try {
+            systemStatus = JSON.parse(document.getElementById('data-system-status').textContent);
+            globalConfig = JSON.parse(document.getElementById('data-global-config').textContent);
+        } catch (e) {
+            console.error("Failed to parse init data", e);
+        }
+
+        // --- Initialization ---
+        window.onload = () => {
+            // Init Tabs
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            const firstTab = document.querySelector('.tab');
+            if (firstTab) firstTab.classList.add('active');
+
+            checkWizard();
+            fetchInstances();
+            setInterval(fetchInstances, 5000);
+        };
+
+        // --- Wizard Logic ---
+        function checkWizard() {
+            if (!systemStatus.ready) {
+                document.getElementById('wizardOverlay').style.display = 'flex';
+                updateWizardStatus();
+            } else {
+                document.getElementById('wizardOverlay').style.display = 'none';
+            }
+        }
+
+        function updateWizardStatus() {
+            const area = document.getElementById('setupStatus');
+            let html = '';
+            html += `<div>Docker: ${systemStatus.docker_installed ? '<span class="check">✔</span>' : '<span class="cross">✘</span>'}</div>`;
+            html += `<div>Permissions: ${systemStatus.user_in_group ? '<span class="check">✔</span>' : '<span class="cross">✘</span>'}</div>`;
+            html += `<div>Directories: ${systemStatus.base_dir_ready ? '<span class="check">✔</span>' : '<span class="cross">✘</span>'}</div>`;
+            area.innerHTML = html;
+
+            if (!systemStatus.docker_installed || !systemStatus.user_in_group) {
+                document.getElementById('passwordArea').style.display = 'block';
+            }
+        }
+
+        async function startSetup() {
+            const password = document.getElementById('sudoPassword').value;
+            if ((!systemStatus.docker_installed || !systemStatus.user_in_group) && !password) {
+                alert("Password richiesta per l'installazione.");
+                return;
+            }
+
+            const btn = document.getElementById('setupBtn');
+            btn.disabled = true;
+            document.getElementById('setupLoader').style.display = 'block';
+
+            try {
+                if (!systemStatus.docker_installed) {
+                    const res = await fetch('/api/setup/install_docker', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ password })
+                    });
+                    const data = await res.json();
+                    if (!data.success) throw new Error(data.message);
+                }
+
+                if (!systemStatus.user_in_group) {
+                    await fetch('/api/setup/fix_group', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ password })
+                    });
+                    alert("Utente aggiunto al gruppo Docker. Riavviare il computer se necessario.");
+                }
+
+                const resStatus = await fetch('/api/status');
+                systemStatus = await resStatus.json();
+                updateWizardStatus();
+
+                if (systemStatus.ready) {
+                    location.reload();
+                }
+            } catch (e) {
+                alert("Errore installazione: " + e.message);
+            } finally {
+                btn.disabled = false;
+                document.getElementById('setupLoader').style.display = 'none';
+            }
+        }
+
+        // --- UX Helpers ---
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span>${message}</span>`;
+
+            const closeBtn = document.createElement('span');
+            closeBtn.innerHTML = '&times;';
+            closeBtn.style.cursor = 'pointer';
+            closeBtn.style.marginLeft = '1rem';
+            closeBtn.style.fontSize = '1.2rem';
+            closeBtn.onclick = () => {
+                toast.style.animation = 'fadeOut 0.3s ease-out';
+                setTimeout(() => toast.remove(), 290);
+            };
+            toast.appendChild(closeBtn);
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                if (document.body.contains(toast)) {
+                    toast.style.animation = 'fadeOut 0.3s ease-out';
+                    setTimeout(() => toast.remove(), 290);
+                }
+            }, 3000);
+        }
+
+        async function withLoading(btnId, action) {
+            const btn = document.getElementById(btnId);
+            if (!btn) return await action();
+
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div>';
+
+            try {
+                await action();
+            } catch (e) {
+                showToast(e.message || 'Error occurred', 'error');
+                console.error(e);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        function formatSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        // --- Instance Management ---
+        async function fetchInstances() {
+            try {
+                const res = await fetch('/api/instances');
+                instances = await res.json();
+                renderList();
+            } catch (e) { console.error("Fetch instance error", e); }
+        }
+
+        function renderList() {
+            const list = document.getElementById('instanceList');
+            if (!list) return;
+            let html = '';
+            instances.forEach(inst => {
+                const isRunning = inst.status.toLowerCase().includes('up');
+                const isActive = currentInstance && currentInstance.name === inst.name;
+                html += `
+                <div class="instance-item ${isActive ? 'active' : ''}" onclick="selectInstance('${inst.name}')">
+                    <span>${inst.name}</span>
+                    <div class="status-dot ${isRunning ? 'running' : ''}"></div>
+                </div>
+            `;
+            });
+            list.innerHTML = html;
+
+            if (currentInstance) {
+                const updated = instances.find(i => i.name === currentInstance.name);
+                if (updated) currentInstance = updated;
+                updateActions();
+            }
+        }
+
+        async function selectInstance(name) {
+            currentInstance = instances.find(i => i.name === name);
+            renderList();
+
+            document.getElementById('currentTitle').innerText = name;
+            document.getElementById('mainActions').style.display = 'flex';
+            document.getElementById('mainGrid').style.display = 'grid';
+
+            updateActions();
+            loadConfig(name);
+            refreshLogs();
+        }
+
+        function updateActions() {
+            if (!currentInstance) return;
+            const isRunning = currentInstance.status.toLowerCase().includes('up');
+            const port = currentInstance.port !== 'N/A' ? currentInstance.port : '';
+
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const openLink = document.getElementById('openLink');
+
+            if (startBtn) startBtn.style.display = isRunning ? 'none' : 'block';
+            if (stopBtn) stopBtn.style.display = isRunning ? 'block' : 'none';
+
+            if (openLink) {
+                openLink.style.display = isRunning && port ? 'block' : 'none';
+                if (port) openLink.href = `http://${window.location.hostname}:${port}`;
+            }
+        }
+
+        // --- Actions ---
+        async function startInstance() {
+            if (!currentInstance) return;
+            await withLoading('startBtn', async () => {
+                const res = await fetch(`/api/start/${currentInstance.name}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`${currentInstance.name} started`, 'success');
+                    fetchInstances();
+                } else {
+                    throw new Error(data.message);
+                }
+            });
+        }
+
+        async function stopInstance() {
+            if (!currentInstance) return;
+            await withLoading('stopBtn', async () => {
+                const res = await fetch(`/api/stop/${currentInstance.name}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`${currentInstance.name} stopped`, 'success');
+                    fetchInstances();
+                } else {
+                    throw new Error(data.message);
+                }
+            });
+        }
+
+        async function deleteInstance() {
+            if (!currentInstance) return;
+            if (!confirm(`Are you sure you want to DELETE ${currentInstance.name}? This cannot be undone.`)) return;
+
+            const deleteData = confirm("Do you also want to delete PERSISTENT DATA (memories, config)?\n\nCancel = Keep Data\nOK = Delete Everything");
+
+            try {
+                const res = await fetch(`/api/delete/${currentInstance.name}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ delete_data: deleteData })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`Instance ${currentInstance.name} deleted`, 'success');
+                    currentInstance = null;
+                    document.getElementById('mainGrid').style.display = 'none';
+                    document.getElementById('mainActions').style.display = 'none';
+                    document.getElementById('currentTitle').innerText = 'Select an Instance';
+                    fetchInstances();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (e) {
+                showToast(e.message, 'error');
+            }
+        }
+
+        // --- Configuration ---
+        async function loadConfig(name) {
+            const envEd = document.getElementById('envEditor');
+            const settEd = document.getElementById('settingsEditor');
+            if (envEd) envEd.value = 'Loading...';
+            if (settEd) settEd.value = 'Loading...';
+
+            try {
+                const res = await fetch(`/api/config/${name}`);
+                const data = await res.json();
+                if (envEd) envEd.value = data.env || '';
+                if (settEd) settEd.value = data.settings || '';
+
+                if (data.settings) {
+                    let sj = {};
+                    try { sj = JSON.parse(data.settings); } catch (e) { }
+                    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+                    setVal('model_chat_prov', sj.chat_model_provider);
+                    setVal('model_chat_name', sj.chat_model_name);
+                    setVal('model_util_prov', sj.util_model_provider);
+                    setVal('model_util_name', sj.util_model_name);
+                    setVal('model_browser_prov', sj.browser_model_provider);
+                    setVal('model_browser_name', sj.browser_model_name);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function saveConfig() {
+            if (!currentInstance) return;
+            const btn = document.querySelector('.card-header .btn-primary');
+            if (!btn) return;
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div>';
+
+            try {
+                let env = document.getElementById('envEditor').value;
+                let settings = document.getElementById('settingsEditor').value;
+
+                try {
+                    let sj = settings ? JSON.parse(settings) : {};
+                    const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : '';
+                    sj.chat_model_provider = getVal('model_chat_prov');
+                    sj.chat_model_name = getVal('model_chat_name');
+                    sj.util_model_provider = getVal('model_util_prov');
+                    sj.util_model_name = getVal('model_util_name');
+                    sj.browser_model_provider = getVal('model_browser_prov');
+                    sj.browser_model_name = getVal('model_browser_name');
+                    settings = JSON.stringify(sj, null, 4);
+                } catch (e) {
+                    console.warn("Could not sync models: invalid settings JSON");
+                }
+
+                await fetch(`/api/config/${currentInstance.name}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ env, settings })
+                });
+                document.getElementById('settingsEditor').value = settings;
+                showToast('Configuration saved!', 'success');
+            } catch (e) {
+                showToast('Save failed: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        }
+
+        function switchTab(el, type) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            document.querySelectorAll('.editor-view').forEach(e => e.style.display = 'none');
+            const target = document.getElementById(type + 'EditorView');
+            if (target) target.style.display = 'block';
+        }
+
+        async function refreshLogs() {
+            if (!currentInstance) return;
+            try {
+                const res = await fetch(`/api/logs/${currentInstance.name}`);
+                const data = await res.json();
+                const el = document.getElementById('logsView');
+                if (el) {
+                    el.innerText = data.logs;
+                    el.scrollTop = el.scrollHeight;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // --- Creation ---
+        function showAddModal() { document.getElementById('addModal').style.display = 'flex'; }
+        function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
+
+        async function createInstance() {
+            const name = document.getElementById('newInstanceName').value;
+            if (!name) return;
+            await withLoading('addModal', async () => {
+                // Note: we can't easily target the specific button inside modal with generic withLoading unless we give it an ID.
+                // Manual handling here for simplicity or add id to button.
+            });
+            // Let's just do manual handling since withLoading expects ID
+            const btn = document.querySelector('#addModal .btn-primary');
+            const original = btn.innerText;
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div>';
+
+            try {
+                const res = await fetch(`/api/start/${name}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`Instance ${name} created`, 'success');
+                    closeAddModal();
+                    fetchInstances();
+                    setTimeout(() => selectInstance(name), 500);
+                } else {
+                    showToast('Creation failed: ' + data.message, 'error');
+                }
+            } catch (e) { showToast(e.message, 'error'); }
+            finally {
+                btn.disabled = false;
+                btn.innerText = original;
+            }
+        }
+
+        // --- Global Settings ---
+        function showGlobalSettings() {
+            const area = document.getElementById('globalKeysArea');
+            let html = '';
+            const keys = globalConfig.default_api_keys || {};
+            const list = ['GROQ_API_KEY', 'OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'OPENROUTER_API_KEY', 'DEEPSEEK_API_KEY'];
+            list.forEach(k => {
+                html += `
+                    <div class="input-group">
+                        <label>${k}</label>
+                        <input type="text" class="global-key" data-key="${k}" value="${keys[k] || ''}">
+                    </div>
+                `;
+            });
+            area.innerHTML = html;
+
+            const m = globalConfig.default_models || {};
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+            setVal('g_chat_prov', m.chat_provider);
+            setVal('g_chat_name', m.chat_model);
+            setVal('g_util_prov', m.util_provider);
+            setVal('g_util_name', m.util_model);
+            setVal('g_browser_prov', m.browser_provider);
+            setVal('g_browser_name', m.browser_model);
+
+            document.getElementById('globalSettingsModal').style.display = 'flex';
+        }
+
+        function closeGlobalSettings() { document.getElementById('globalSettingsModal').style.display = 'none'; }
+
+        async function saveGlobalSettings() {
+            const btn = document.querySelector('#globalSettingsModal .btn-primary');
+            const original = btn.innerText;
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div>';
+
+            try {
+                const inputs = document.querySelectorAll('.global-key');
+                const keys = {};
+                inputs.forEach(i => keys[i.getAttribute('data-key')] = i.value);
+
+                globalConfig.default_api_keys = keys;
+                const getVal = (id) => document.getElementById(id).value;
+                globalConfig.default_models = {
+                    chat_provider: getVal('g_chat_prov'),
+                    chat_model: getVal('g_chat_name'),
+                    util_provider: getVal('g_util_prov'),
+                    util_model: getVal('g_util_name'),
+                    browser_provider: getVal('g_browser_prov'),
+                    browser_model: getVal('g_browser_name')
+                };
+
+                await fetch('/api/manager_config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(globalConfig)
+                });
+                showToast('Global settings saved!', 'success');
+                closeGlobalSettings();
+            } catch (e) { showToast(e.message, 'error'); }
+            finally {
+                btn.disabled = false;
+                btn.innerText = original;
+            }
+        }
+
+        // --- File Browser ---
+        let currentPath = "";
+
+        function openFileBrowser() {
+            if (!currentInstance) return;
+            document.getElementById('fileModal').style.display = 'flex';
+            loadFileBrowser("");
+        }
+
+        function closeFileBrowser() {
+            document.getElementById('fileModal').style.display = 'none';
+        }
+
+        async function loadFileBrowser(path) {
+            currentPath = path;
+            renderBreadcrumb(path);
+
+            const tbody = document.getElementById('fileListBody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 2rem;"><div style="display:inline-block" class="spinner"></div> Loading...</td></tr>';
+
+            try {
+                const res = await fetch(`/api/files/${currentInstance.name}?path=${encodeURIComponent(path)}`);
+                const data = await res.json();
+
+                if (data.error) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--danger);">${data.error}</td></tr>`;
+                    return;
+                }
+
+                if (data.files.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Empty directory</td></tr>';
+                    return;
+                }
+
+                let html = '';
+                data.files.forEach(f => {
+                    const icon = f.type === 'dir' ? '📁' : '📄';
+                    const size = f.type === 'dir' ? '-' : formatSize(f.size);
+                    const nameClick = f.type === 'dir' ? `onclick="loadFileBrowser('${f.path}')"` : '';
+                    const downloadBtn = f.type === 'file' ?
+                        `<button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;" onclick="downloadFile('${f.path}')">⬇</button>` : '';
+
+                    html += `
+                        <tr class="file-row">
+                            <td onclick="loadFileBrowser('${f.path}')" style="cursor:pointer">${icon}</td>
+                            <td onclick="loadFileBrowser('${f.path}')" style="cursor:pointer; font-weight:500;">${f.name}</td>
+                            <td>${size}</td>
+                            <td>${downloadBtn}</td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--danger);">${e.message}</td></tr>`;
+            }
+        }
+
+        function renderBreadcrumb(path) {
+            const parts = path.split('/').filter(p => p);
+            let html = '<span onclick="loadFileBrowser(\'\')">root</span>';
+            let acc = "";
+            parts.forEach((p, i) => {
+                acc += (i === 0 ? "" : "/") + p;
+                html += ` / <span onclick="loadFileBrowser('${acc}')">${p}</span>`;
+            });
+            document.getElementById('fileBreadcrumb').innerHTML = html;
+        }
+
+        function downloadFile(path) {
+            window.open(`/api/files/${currentInstance.name}/download?path=${encodeURIComponent(path)}`, '_blank');
+        }
+
+        function downloadZip() {
+            window.open(`/api/files/${currentInstance.name}/zip?path=${encodeURIComponent(currentPath)}`, '_blank');
+        }
+
+    </script>
+</body>
+
+</html>

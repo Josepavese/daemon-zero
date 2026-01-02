@@ -46,3 +46,8 @@ instruments/**
 # for browser-use
 agent_history.gif
 
+# manager build artifacts
+manager/build/
+manager/dist/
+manager/*.spec
+

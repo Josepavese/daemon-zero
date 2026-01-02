@@ -1,0 +1,19 @@
+{
+    "default_api_keys": {
+        "GROQ_API_KEY": "",
+        "OPENAI_API_KEY": "",
+        "ANTHROPIC_API_KEY": "",
+        "OPENROUTER_API_KEY": "",
+        "DEEPSEEK_API_KEY": ""
+    },
+    "default_models": {
+        "chat_provider": "groq",
+        "chat_model": "moonshotai/kimi-k2-instruct-0905",
+        "util_provider": "groq",
+        "util_model": "openai/gpt-oss-120b",
+        "browser_provider": "groq",
+        "browser_model": "openai/gpt-oss-120b"
+    },
+    "docker_installed": false,
+    "user_in_group": false
+}
