@@ -201,6 +201,7 @@ class SetupManager:
         self.error = None
         self.lock = threading.RLock()  # Use reentrant lock to prevent deadlock during status polling
         self.log_file = Path(log_file)
+        self.start_time = None  # Track when task started for timeout detection
         logger.debug(f"SetupManager initialized with log file: {self.log_file}")
 
     def add_log(self, message: str):
@@ -227,6 +228,7 @@ class SetupManager:
             self.status_text = task_name
             self.error = None
             self.logs = []
+            self.start_time = time.time()
             self.add_log(f"--- Task Initialization: {task_name} ---")
 
     def start_task(self, name: str):
@@ -245,9 +247,24 @@ class SetupManager:
                 self.error = message
             self.add_log(f"--- Task Concluded: {'SUCCESS' if success else 'FAILURE'} ({message}) ---")
 
+    def manual_reset(self):
+        """Manually reset the setup manager state (emergency use only)."""
+        with self.lock:
+            self.is_running = False
+            self.status_text = "Manually Reset"
+            self.error = None
+            self.start_time = None
+            self.add_log("[MANUAL RESET] Setup state forcefully cleared.")
+
     def get_status(self) -> dict:
         """Return a snapshot of the current setup progress."""
         with self.lock:
+            # Auto-timeout detection (15 minutes)
+            if self.is_running and self.start_time and (time.time() - self.start_time > 900):
+                self.is_running = False
+                self.error = "Task timed out after 15 minutes."
+                self.add_log("[TIMEOUT] Task exceeded maximum duration.")
+            
             return {
                 "logs": self.logs,
                 "is_running": self.is_running,
@@ -276,6 +293,12 @@ def api_get_status():
 def api_get_setup_status():
     """Poll for setup task progress and logs."""
     return jsonify(setup_manager.get_status())
+
+@app.route('/api/setup/reset', methods=['POST'])
+def api_reset_setup():
+    """Manually reset stuck setup state (emergency endpoint)."""
+    setup_manager.manual_reset()
+    return jsonify({"success": True, "message": "Setup state has been reset."})
 
 @app.route('/api/setup/install_docker', methods=['POST'])
 def api_trigger_install_docker():
