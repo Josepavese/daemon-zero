@@ -1213,6 +1213,19 @@
             window.open(`/api/files/${currentInstance.name}/zip?path=${encodeURIComponent(currentPath)}`, '_blank');
         }
 
+        async function createDesktopShortcut() {
+            try {
+                const res = await fetch('/api/setup/create_shortcut', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (e) {
+                showToast("Error creating shortcut: " + e.message, 'error');
+            }
+        }
     </script>
 </body>
 
