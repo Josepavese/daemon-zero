@@ -15,6 +15,8 @@ import zipfile
 import shutil
 import threading
 import time
+import platform_utils
+import setup_linux
 
 app = Flask(__name__)
 
@@ -149,29 +151,34 @@ def api_install_docker():
     if not password:
         return jsonify({"success": False, "message": "Password required"})
 
-    # This is a bit risky but requested. Use pipe to pass password to sudo -S
-    cmd = f"echo '{password}' | sudo -S ./install.sh"
-    try:
-        # Run install.sh which handles docker install logic
-        process = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-        if process.returncode == 0:
-            return jsonify({"success": True, "message": "Docker installed/verified successfully"})
+    # Use the new Python-based installer
+    if platform_utils.is_linux():
+        success, message = setup_linux.install_docker_ubuntu(password)
+        if success:
+            # Also setup base directories
+            setup_linux.setup_base_dirs(BASE_DATA_DIR)
+            return jsonify({"success": True, "message": message})
         else:
-            return jsonify({"success": False, "message": process.stderr or "Installation failed"})
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)})
+            return jsonify({"success": False, "message": message})
+    
+    return jsonify({"success": False, "message": "Platform not supported for auto-install yet."})
 
 @app.route('/api/setup/fix_group', methods=['POST'])
 def api_fix_group():
     data = request.json
     password = data.get('password')
-    user = os.getenv("USER")
-    cmd = f"echo '{password}' | sudo -S usermod -aG docker {user}"
-    try:
-        subprocess.run(cmd, shell=True, check=True)
-        return jsonify({"success": True, "message": "User added to docker group. Please restart GUI or log out/in."})
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)})
+    if platform_utils.is_linux():
+        success, message = setup_linux.add_user_to_docker_group(password)
+        return jsonify({"success": success, "message": message})
+    
+    return jsonify({"success": False, "message": "Platform not supported for auto-group-fix."})
+
+@app.route('/api/setup/create_shortcut', methods=['POST'])
+def api_create_shortcut():
+    if platform_utils.is_linux():
+        success, message = setup_linux.create_desktop_shortcut()
+        return jsonify({"success": success, "message": message})
+    return jsonify({"success": False, "message": "Shortcut creation only supported on Linux for now."})
 
 @app.route('/api/manager_config', methods=['GET', 'POST'])
 def api_manager_config():

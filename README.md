@@ -2,44 +2,50 @@
 
 # `DaemonZero` (DZ)
 
-### The Modern Evolution of Agentic AI
+### The Modern Daemon: Personal, Autonomous, Organic
 
 </div>
 
-DaemonZero (DZ) is a modernized fork of the agentic framework formerly known as Agent Zero. It is designed to be a robust, feature-rich, and autonomous AI system that grows and learns with you.
+DaemonZero (DZ) is a modernized fork of the Agent Zero framework. Our philosophy is rooted in the concept of the "Modern Daemon" – a background process that is always active, learning, and ready to serve, yet fully under the user's control.
 
-## 🚀 What is DaemonZero?
+## 🌌 Philosophy & Intent
 
-DaemonZero is a general-purpose personal assistant that uses your computer as a tool. It is not pre-programmed for specific tasks but is designed to be dynamic, organically growing, and transparent.
+### 1. **Complete Autonomy, Zero Friction**
+We believe that advanced AI should be as easy to deploy as a classic system daemon. DaemonZero is designed to handle its own environment, prerequisites, and lifecycle. The **DZ Manager** is the single hub for this vision, providing a unified setup and orchestration experience.
 
-### Key Features
-- **General-purpose Assistant**: Gathers information, executes commands, writes code, and cooperates with other agents.
-- **Computer as a Tool**: Uses the OS, terminal, and browser to accomplish tasks.
-- **Persistent Memory**: Learns from past interactions to solve future tasks faster.
-- **Multi-agent Cooperation**: Orchestrates subordinate agents for complex tasks.
-- **Totally Customizable**: Defined by system prompts and open architecture.
+### 2. **Organic Learning**
+DZ is not a static tool. It is an organic agent that remembers past tasks, improves its own codebase, and adapts its strategies based on successful outcomes stored in its persistent memory.
 
-## 🔮 Future Direction
+### 3. **Transparency over Magic**
+Everything in DZ – from prompts to tool implementations – is readable and modifiable. We prioritize system transparency so that power users can audit and refine every cognitive step the agent takes.
 
-We are actively working on:
-- **Centralized Management**: A unified launcher and manager (DZ Manager) for handling instances and dependencies.
-- **Enhanced Stability**: Improved error handling and robust configuration management.
-- **Modern UI/UX**: A cleaner, more intuitive interface for managing your agents.
-- **Performance**: Optimized resource usage and faster response times.
+### 4. **Computer as the Primary Workspace**
+Unlike sandbox-heavy frameworks, DZ treats the host OS as its primary workspace. It uses terminal, browser, and file system tools to bridge the gap between AI reasoning and real-world execution.
 
-## ⚙️ Installation & Usage
+## 🚀 Key Features
 
-*(Detailed installation instructions coming soon. Check `manager/` folder for the new launcher)*
+- **Unified Manager**: One-click setup (Docker, deps, shortcuts) for Linux and eventually Windows.
+- **Smart Orchestration**: Seamless multi-agent collaboration with a clear hierarchy.
+- **Persistent Memory**: Vector-based recall that grows with every interaction.
+- **Extensible Instruments**: Easy framework for adding custom, complex tools.
 
-### Quick Start (Docker)
+## ⚙️ Quick Start
+
+### 1. Unified Setup (Linux)
+The easiest way to start is using the **DaemonZero Manager**:
+
 ```bash
-docker pull agent0ai/agent-zero  # (Temporary upstream image)
-docker run -p 50001:80 agent0ai/agent-zero
+cd manager
+python dz-launcher.py
 ```
+*The Manager will automatically detect missing dependencies like Docker and guide you through the setup.*
 
-## 🤝 Community
+## 🤝 Roadmap
 
-Join us in building the next generation of autonomous agents.
+- [ ] Complete Windows support in DZ Manager.
+- [ ] Centralized Secrets Management (Provider-level).
+- [ ] Advanced Web-based Multi-instance Control Center.
+- [ ] Native Browser-use integration v2.
 
-- **Repository**: `daemon-zero`
-- **Abbreviation**: DZ
+---
+*DaemonZero is an open-source project dedicated to the evolution of personal agentic AI.*
