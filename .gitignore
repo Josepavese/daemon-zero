@@ -51,3 +51,5 @@ manager/build/
 manager/dist/
 manager/*.spec
 
+# Secrets
+secrets.env

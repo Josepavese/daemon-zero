@@ -6,7 +6,7 @@
 
 </div>
 
-DaemonZero (DZ) is a modernized fork of the DaemonZero framework. Our philosophy is rooted in the concept of the "Modern Daemon" – a background process that is always active, learning, and ready to serve, yet fully under the user's control.
+DaemonZero (DZ) is a modernized fork of the agent-zero framework. Our philosophy is rooted in the concept of the "Modern Daemon" – a background process that is always active, learning, and ready to serve, yet fully under the user's control.
 
 ## 🌌 Philosophy & Intent
 
