@@ -1,6 +1,5 @@
-# Use the pre-built base image for DZ
 # FROM daemon-zero-base:local
-FROM Josepavese/daemon-zero-base:latest
+FROM daemon0ai/daemon-zero-base:latest
 
 # Check if the argument is provided, else throw an error
 ARG BRANCH
