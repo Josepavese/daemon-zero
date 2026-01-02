@@ -9,9 +9,9 @@ if ! python3 -c "import venv, ensurepip" > /dev/null 2>&1; then
     if [ -f /etc/debian_version ]; then
         # Detect specific version
         PY_VER=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-        echo "[INFO] Detected Python $PY_VER. Installing: sudo apt update && sudo apt install -y python3-venv python3.$PY_VER-venv"
+        echo "[INFO] Detected Python $PY_VER. Installing: sudo apt update && sudo apt install -y python3-venv python${PY_VER}-venv"
         sudo apt update || true
-        sudo apt install -y python3-venv python3.$PY_VER-venv
+        sudo apt install -y python3-venv python${PY_VER}-venv
     else
         echo "[ERROR] python3-venv/ensurepip is required to create the manager's sandbox."
         echo "Please install it using your system's package manager."
