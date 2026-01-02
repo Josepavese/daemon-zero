@@ -786,13 +786,18 @@
                 });
 
                 const data = await res.json();
-                if (!data.success) throw new Error(data.message);
+                if (!data.success) {
+                    showToast(data.message, 'error');
+                    btn.disabled = false;
+                    document.getElementById('setupLoader').style.display = 'none';
+                    return;
+                }
 
                 // Start polling
                 pollSetupStatus();
 
             } catch (e) {
-                alert("Errore: " + e.message);
+                showToast("Errore: " + e.message, 'error');
                 btn.disabled = false;
                 document.getElementById('setupLoader').style.display = 'none';
             }
@@ -812,7 +817,9 @@
                     logsEl.scrollTop = logsEl.scrollHeight;
                 }
 
-                if (progressEl) progressEl.style.width = data.progress + '%';
+                const setupPB = document.getElementById('setupProgressBar');
+                if (setupPB) setupPB.style.width = data.progress + '%';
+                if (progressEl && !setupPB) progressEl.style.width = data.progress + '%';
                 if (statusEl) statusEl.innerText = data.status_text;
 
                 if (data.is_running) {

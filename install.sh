@@ -2,7 +2,7 @@
 # DaemonZero One-Line Installer
 set -e
 
-REPO_URL="https://github.com/Josepavese/daemon-zero/archive/refs/heads/main.tar.gz"
+REPO_URL="https://github.com/Josepavese/daemon-zero/archive/refs/heads/test.tar.gz"
 INSTALL_DIR="daemon-zero"
 
 echo "=== DaemonZero Installer ==="
