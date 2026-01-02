@@ -416,21 +416,34 @@ def api_trigger_image_pull():
         try:
             setup_manager.add_log("[INFO] Pulling josepavese/daemon-zero:latest from Docker Hub...")
             setup_manager.add_log("[INFO] This may take several minutes depending on your connection.")
+            setup_manager.progress = 10  # Show initial progress
             
-            # Pull the image
-            result = subprocess.run(
+            # Pull the image (this will take time)
+            process = subprocess.Popen(
                 ["docker", "pull", "josepavese/daemon-zero:latest"],
-                capture_output=True, text=True
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1
             )
             
-            if result.returncode != 0:
-                setup_manager.finish_task(False, f"Failed to pull image: {result.stderr}")
+            # Stream output and update progress
+            line_count = 0
+            for line in process.stdout:
+                if line.strip():
+                    setup_manager.add_log(line.strip())
+                    line_count += 1
+                    # Gradually increase progress (cap at 90% until completion)
+                    if line_count % 5 == 0 and setup_manager.progress < 90:
+                        setup_manager.progress = min(90, setup_manager.progress + 5)
+            
+            process.wait()
+            
+            if process.returncode != 0:
+                setup_manager.finish_task(False, "Failed to pull image. Please check your internet connection.")
                 return
             
-            # Log pull output
-            for line in result.stdout.splitlines():
-                if line.strip():
-                    setup_manager.add_log(line)
+            setup_manager.progress = 95
             
             # Tag the image
             setup_manager.add_log("[INFO] Tagging image as 'daemon-zero'...")
@@ -443,6 +456,7 @@ def api_trigger_image_pull():
                 setup_manager.finish_task(False, f"Failed to tag image: {tag_result.stderr}")
                 return
             
+            setup_manager.progress = 100
             setup_manager.finish_task(True, "Docker image downloaded and ready!")
             
         except Exception as e:
