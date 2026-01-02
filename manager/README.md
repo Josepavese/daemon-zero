@@ -13,7 +13,13 @@ The Manager uses a Python-based setup engine (`setup_linux.py`, `platform_utils.
 
 ## 🚀 Usage
 
-### Development Mode
+### Recommended: Using Root Wrappers
+For the best experience, use the launchers in the root directory:
+- **Linux**: `./run.sh`
+- **Windows**: `run.bat`
+
+### Manual/Development Mode
+If you prefer running from the `manager` directory directly:
 ```bash
 pip install -r requirements.txt
 python dz-launcher.py

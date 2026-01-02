@@ -397,5 +397,5 @@ def api_files_zip(name):
         return jsonify({"error": str(e)}), 400
 
 if __name__ == '__main__':
-    print("Starting AgentZero GUI on http://0.0.0.0:8080")
+    print("Starting DaemonZero GUI on http://0.0.0.0:8080")
     app.run(host='0.0.0.0', port=8080, debug=True)

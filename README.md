@@ -29,16 +29,24 @@ Unlike sandbox-heavy frameworks, DZ treats the host OS as its primary workspace.
 - **Persistent Memory**: Vector-based recall that grows with every interaction.
 - **Extensible Instruments**: Easy framework for adding custom, complex tools.
 
-## ⚙️ Quick Start
+## 🚀 Quick Start
 
-### 1. Unified Setup (Linux)
-The easiest way to start is using the **DaemonZero Manager**:
+### The Easy Way (Verified on Linux & Ubuntu)
+DaemonZero is designed to be self-configuring. Simply run the launcher script:
 
+**Linux:**
 ```bash
-cd manager
-python dz-launcher.py
+./run.sh
+```
+
+**Windows:**
+```batch
+run.bat
 ```
 *The Manager will automatically detect missing dependencies like Docker and guide you through the setup.*
+
+## 📦 Standalone Releases
+For the ultimate experience, download the standalone binary from our **Releases** section. No Python installation required.
 
 ## 🤝 Roadmap
 
