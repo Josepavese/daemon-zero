@@ -40,6 +40,13 @@ The resulting binary will be in `dist/daemon-zero-manager`.
 - `platform_utils.py`: OS detection and utility functions.
 - `templates/`: HTML5/JS UI for the manager.
 
+## 📦 Project Organization
+The root directory has been cleaned for a professional appearance:
+- **`manager/`**: Primary application hub.
+- **`scripts/archive/`**: Legacy utility scripts preserved for reference.
+- **`tests/`**: Segmented into `unit` and `integration` suites.
+- **`docker/`**: Rebranded `daemon-zero` build configurations.
+
 ## 🛡️ Security
 
 - **Secrets**: The manager provides a UI to configure API keys, which are injected into instances via `.env` files.

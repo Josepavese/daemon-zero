@@ -1,6 +1,6 @@
-# Use the pre-built base image for A0
-# FROM agent-zero-base:local
-FROM agent0ai/agent-zero-base:latest
+# Use the pre-built base image for DZ
+# FROM daemon-zero-base:local
+FROM agent0ai/daemon-zero-base:latest
 
 # Set BRANCH to "local" if not provided
 ARG BRANCH=local
@@ -9,7 +9,7 @@ ENV BRANCH=$BRANCH
 # Copy filesystem files to root
 COPY ./docker/run/fs/ /
 # Copy current development files to git, they will only be used in "local" branch
-COPY ./ /git/agent-zero
+COPY ./ /git/daemon-zero
 
 # pre installation steps
 RUN bash /ins/pre_install.sh $BRANCH

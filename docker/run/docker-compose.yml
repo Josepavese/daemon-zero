@@ -1,8 +1,8 @@
 services:
-  agent-zero:
-    container_name: agent-zero
-    image: agent0ai/agent-zero:latest
+  daemon-zero:
+    container_name: daemon-zero
+    image: Josepavese/daemon-zero:latest
     volumes:
-      - ./agent-zero:/a0
+      - ./daemon-zero:/a0
     ports:
       - "50080:80"

@@ -1,6 +1,6 @@
 # Use the pre-built base image for A0
-# FROM agent-zero-base:local
-FROM agent0ai/agent-zero-base:latest
+# FROM daemon-zero-base:local
+FROM Josepavese/daemon-zero-base:latest
 
 # Check if the argument is provided, else throw an error
 ARG BRANCH
