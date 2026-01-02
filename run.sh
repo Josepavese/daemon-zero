@@ -37,5 +37,12 @@ source manager/.venv/bin/activate
 # Install requirements
 pip install -r manager/requirements.txt
 
+# Detect headless environment and force CLI mode
+if [ -z "$DISPLAY" ]; then
+    echo "[INFO] Headless environment detected. Starting in CLI mode (web server only)."
+    echo "[INFO] Access the Manager at http://0.0.0.0:8080 from your browser."
+    export DZ_CLI_MODE=1
+fi
+
 # Run launcher
 python manager/dz-launcher.py
