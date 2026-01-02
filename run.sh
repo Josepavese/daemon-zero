@@ -1,19 +1,33 @@
 #!/bin/bash
-# DaemonZero Quick Launch Script
+# DaemonZero Runner for Linux
 
-# Navigate to manager directory
-cd "$(dirname "$0")/manager"
+echo "Starting DaemonZero Manager..."
 
-# Check if virtual environment exists, if not, it's the first run
-if [ ! -d ".venv" ]; then
-    echo "First run detected. Setting up virtual environment..."
-    python3 -m venv .venv
-    source .venv/bin/activate
-    pip install --upgrade pip
-    pip install -r ../requirements.txt
-else
-    source .venv/bin/activate
+# 1. Check for python3-venv (Common missing dependency on Debian/Ubuntu)
+if ! python3 -m venv --help > /dev/null 2>&1; then
+    echo "[WARN] python3-venv is missing. Attempting to install system prerequisites..."
+    if [ -f /etc/debian_version ]; then
+        # On Debian/Ubuntu, try to install it. This requires sudo.
+        echo "[INFO] Running: sudo apt update && sudo apt install -y python3-venv"
+        sudo apt update && sudo apt install -y python3-venv
+    else
+        echo "[ERROR] python3-venv is required to create the manager's sandbox."
+        echo "Please install it using your system's package manager."
+        exit 1
+    fi
 fi
 
-# Launch the manager
-python dz-launcher.py
+# 2. Check if .venv exists, if not create it
+if [ ! -d "manager/.venv" ]; then
+    echo "First run detected. Setting up virtual environment..."
+    python3 -m venv manager/.venv
+fi
+
+# Activate venv
+source manager/.venv/bin/activate
+
+# Install requirements
+pip install -r manager/requirements.txt
+
+# Run launcher
+python manager/dz-launcher.py
