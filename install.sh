@@ -13,6 +13,7 @@ command -v tar >/dev/null 2>&1 || { echo >&2 "Required 'tar' but it's not instal
 
 # 2. Download and Extract (Lightweight, no git history)
 echo "[INFO] Downloading latest version..."
+rm -rf "$INSTALL_DIR"
 mkdir -p "$INSTALL_DIR"
 curl -L "$REPO_URL" | tar xz -C "$INSTALL_DIR" --strip-components=1
 

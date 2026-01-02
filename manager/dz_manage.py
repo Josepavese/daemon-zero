@@ -49,14 +49,15 @@ def check_docker():
     """
     if shutil.which("docker") is None:
         logger.error("Docker is not installed or not in PATH.")
-        sys.exit(1)
+        return False
     
     try:
         # Use a simple command to probe the daemon
         subprocess.run(["docker", "info"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-    except subprocess.CalledProcessError:
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
         logger.error("Docker daemon is not running or the current user lacks permissions.")
-        sys.exit(1)
+        return False
 
 def container_exists(name: str) -> bool:
     """Check if a Docker container with the specified name exists (running or stopped)."""
@@ -319,8 +320,8 @@ def get_agents() -> list:
             ["docker", "ps", "-a", "--filter", "name=^daemon-zero-", "--format", "{{.Names}}|{{.Status}}"],
             capture_output=True, text=True, check=True
         )
-    except subprocess.SubprocessError as e:
-        logger.error(f"Failed to list Docker containers: {e}")
+    except (subprocess.SubprocessError, FileNotFoundError) as e:
+        logger.debug(f"Docker listing skipped (Docker missing or error): {e}")
         return []
     
     agents = []
