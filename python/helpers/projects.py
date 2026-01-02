@@ -6,7 +6,7 @@ from python.helpers.print_style import PrintStyle
 
 
 if TYPE_CHECKING:
-    from agent import AgentContext
+    from dz import AgentContext
 
 PROJECTS_PARENT_DIR = "usr/projects"
 PROJECT_META_DIR = ".a0proj"
@@ -223,7 +223,7 @@ def _get_projects_list(parent_dir):
 
 
 def activate_project(context_id: str, name: str):
-    from agent import AgentContext
+    from dz import AgentContext
 
     data = load_edit_project_data(name)
     context = AgentContext.get(context_id)
@@ -242,7 +242,7 @@ def activate_project(context_id: str, name: str):
 
 
 def deactivate_project(context_id: str):
-    from agent import AgentContext
+    from dz import AgentContext
 
     context = AgentContext.get(context_id)
     if context is None:
@@ -255,7 +255,7 @@ def deactivate_project(context_id: str):
 
 
 def reactivate_project_in_chats(name: str):
-    from agent import AgentContext
+    from dz import AgentContext
 
     for context in AgentContext.all():
         if context.get_data(CONTEXT_DATA_KEY_PROJECT) == name:
@@ -264,7 +264,7 @@ def reactivate_project_in_chats(name: str):
 
 
 def deactivate_project_in_chats(name: str):
-    from agent import AgentContext
+    from dz import AgentContext
 
     for context in AgentContext.all():
         if context.get_data(CONTEXT_DATA_KEY_PROJECT) == name:

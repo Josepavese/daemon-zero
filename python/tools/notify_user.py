@@ -1,5 +1,5 @@
 from python.helpers.tool import Tool, Response
-from agent import AgentContext
+from dz import AgentContext
 from python.helpers.notification import NotificationPriority, NotificationType
 
 class NotifyUserTool(Tool):

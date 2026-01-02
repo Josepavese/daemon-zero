@@ -1,6 +1,6 @@
 {
-  "name": "Agent Zero",
-  "short_name": "Agent Zero",
+  "name": "DaemonZero",
+  "short_name": "DaemonZero",
   "description": "Autonomous AI agent",
   "start_url": "/",
   "display": "standalone",

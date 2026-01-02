@@ -1,4 +1,4 @@
-from agent import AgentContext
+from dz import AgentContext
 from python.helpers.api import ApiHandler, Request, Response
 from python.helpers.print_style import PrintStyle
 from python.helpers import persist_chat

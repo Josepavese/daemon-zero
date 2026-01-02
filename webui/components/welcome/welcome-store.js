@@ -54,10 +54,10 @@ const model = {
         memoryStore.openModal();
         break;
       case "website":
-        window.open("https://agent-zero.ai", "_blank");
+        window.open("https://daemon-zero.ai", "_blank");
         break;
       case "github":
-        window.open("https://github.com/agent0ai/agent-zero", "_blank");
+        window.open("https://github.com/daemon0ai/daemon-zero", "_blank");
         break;
     }
   },

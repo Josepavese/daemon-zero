@@ -28,7 +28,7 @@ from langchain_core.documents import Document
 from python.helpers import knowledge_import
 from python.helpers.log import Log, LogItem
 from enum import Enum
-from agent import Agent, AgentContext
+from dz import Agent, AgentContext
 import models
 import logging
 from simpleeval import simple_eval

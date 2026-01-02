@@ -10,7 +10,7 @@ from python.helpers.errors import RepairableException
 from python.helpers import files
 
 if TYPE_CHECKING:
-    from agent import AgentContext
+    from dz import AgentContext
 
 
 # New alias-based placeholder format §§secret(KEY)
@@ -512,7 +512,7 @@ def get_secrets_manager(context: "AgentContext|None" = None) -> SecretsManager:
 
     # use AgentContext from contextvars if no context provided
     if not context:
-        from agent import AgentContext
+        from dz import AgentContext
         context = AgentContext.current()
 
     # merged with project secrets if active

@@ -75,7 +75,7 @@ class NotificationManager:
         display_time: int = 3,
         group: str = "",
     ) -> NotificationItem:
-        from agent import AgentContext
+        from dz import AgentContext
         return AgentContext.get_notification_manager().add_notification(
             type, priority, message, title, detail, display_time, group
         )

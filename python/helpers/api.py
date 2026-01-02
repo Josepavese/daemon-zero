@@ -4,7 +4,7 @@ import threading
 from typing import Union, TypedDict, Dict, Any
 from attr import dataclass
 from flask import Request, Response, jsonify, Flask, session, request, send_file
-from agent import AgentContext
+from dz import AgentContext
 from initialize import initialize_agent
 from python.helpers.print_style import PrintStyle
 from python.helpers.errors import format_error
@@ -79,7 +79,7 @@ class ApiHandler:
             PrintStyle.error(f"API error: {error}")
             return Response(response=error, status=500, mimetype="text/plain")
 
-    # get context to run agent zero in
+    # get context to run DaemonZero in
     def use_context(self, ctxid: str, create_if_not_exists: bool = True):
         with self.thread_lock:
             if not ctxid:

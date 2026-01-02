@@ -46,7 +46,7 @@ class AgentContext:
         config: "AgentConfig",
         id: str | None = None,
         name: str | None = None,
-        agent0: "Agent|None" = None,
+        daemon0: "Agent|None" = None,
         log: Log.Log | None = None,
         paused: bool = False,
         streaming_agent: "Agent|None" = None,
@@ -71,7 +71,7 @@ class AgentContext:
         self.config = config
         self.log = log or Log.Log()
         self.log.context = self
-        self.agent0 = agent0 or Agent(0, self.config, self)
+        self.daemon0 = daemon0 or Agent(0, self.config, self)
         self.paused = paused
         self.streaming_agent = streaming_agent
         self.task: DeferredTask | None = None
@@ -208,7 +208,7 @@ class AgentContext:
     def reset(self):
         self.kill_process()
         self.log.reset()
-        self.agent0 = Agent(0, self.config, self)
+        self.daemon0 = Agent(0, self.config, self)
         self.streaming_agent = None
         self.paused = False
 
@@ -219,7 +219,7 @@ class AgentContext:
         return self.task
 
     def get_agent(self):
-        return self.streaming_agent or self.agent0
+        return self.streaming_agent or self.daemon0
 
     def communicate(self, msg: "UserMessage", broadcast_level: int = 1):
         self.paused = False  # unpause if paused
@@ -340,7 +340,7 @@ class Agent:
         self.config = config
 
         # agent context
-        self.context = context or AgentContext(config=config, agent0=self)
+        self.context = context or AgentContext(config=config, daemon0=self)
 
         # non-config vars
         self.number = number

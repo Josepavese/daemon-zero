@@ -1,5 +1,5 @@
 from python.helpers.extension import Extension
-from agent import Agent, LoopData
+from dz import Agent, LoopData
 from python.helpers.secrets import get_secrets_manager
 
 

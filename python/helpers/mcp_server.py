@@ -5,7 +5,7 @@ from openai import BaseModel
 from pydantic import Field
 from fastmcp import FastMCP
 
-from agent import AgentContext, AgentContextType, UserMessage
+from dz import AgentContext, AgentContextType, UserMessage
 from python.helpers.persist_chat import remove_chat
 from initialize import initialize_agent
 from python.helpers.print_style import PrintStyle

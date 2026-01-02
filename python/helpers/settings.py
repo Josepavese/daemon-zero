@@ -595,7 +595,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
     api_keys_section: SettingsSection = {
         "id": "api_keys",
         "title": "API Keys",
-        "description": "API keys for model providers and services used by DaemonZero. You can set multiple API keys separated by a comma (,). They will be used in round-robin fashion.<br>For more information abou DaemonZero Venice provider, see <a href='http://agent-zero.ai/?community/api-dashboard/about' target='_blank'>DaemonZero Venice</a>.",
+        "description": "API keys for model providers and services used by DaemonZero. You can set multiple API keys separated by a comma (,). They will be used in round-robin fashion.<br>For more information abou DaemonZero Venice provider, see <a href='http://daemon-zero.ai/?community/api-dashboard/about' target='_blank'>DaemonZero Venice</a>.",
         "fields": api_keys_fields,
         "tab": "external",
     }
@@ -778,7 +778,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
         {
             "id": "memory_recall_memories_max_result",
             "title": "Memory auto-recall max memories to use",
-            "description": "The maximum number of memories to inject into A0's context window.",
+            "description": "The maximum number of memories to inject into DZ's context window.",
             "type": "number",
             "value": settings["memory_recall_memories_max_result"],
         }
@@ -798,7 +798,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
         {
             "id": "memory_recall_solutions_max_result",
             "title": "Memory auto-recall max solutions to use",
-            "description": "The maximum number of solutions to inject into A0's context window.",
+            "description": "The maximum number of solutions to inject into DZ's context window.",
             "type": "number",
             "value": settings["memory_recall_solutions_max_result"],
         }
@@ -808,7 +808,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
         {
             "id": "memory_memorize_enabled",
             "title": "Auto-memorize enabled",
-            "description": "A0 will automatically memorize facts and solutions from conversation history.",
+            "description": "DZ will automatically memorize facts and solutions from conversation history.",
             "type": "switch",
             "value": settings["memory_memorize_enabled"],
         }
@@ -818,7 +818,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
         {
             "id": "memory_memorize_consolidation",
             "title": "Auto-memorize AI consolidation",
-            "description": "A0 will automatically consolidate similar memories using utility LLM. Improves memory quality over time, adds 2 utility LLM calls per memory.",
+            "description": "DZ will automatically consolidate similar memories using utility LLM. Improves memory quality over time, adds 2 utility LLM calls per memory.",
             "type": "switch",
             "value": settings["memory_memorize_consolidation"],
         }
@@ -840,7 +840,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
     memory_section: SettingsSection = {
         "id": "memory",
         "title": "Memory",
-        "description": "Configuration of A0's memory system. A0 memorizes and recalls memories automatically to help it's context awareness.",
+        "description": "Configuration of DZ's memory system. DZ memorizes and recalls memories automatically to help it's context awareness.",
         "fields": memory_fields,
         "tab": "agent",
     }
@@ -863,7 +863,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
         #     {
         #         "id": "rfc_auto_docker",
         #         "title": "RFC Auto Docker Management",
-        #         "description": "Automatically create dockerized instance of A0 for RFCs using this instance's code base and, settings and .env.",
+        #         "description": "Automatically create dockerized instance of DZ for RFCs using this instance's code base and, settings and .env.",
         #         "type": "text",
         #         "value": settings["rfc_auto_docker"],
         #     }
@@ -873,7 +873,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
             {
                 "id": "rfc_url",
                 "title": "RFC Destination URL",
-                "description": "URL of dockerized A0 instance for remote function calls. Do not specify port here.",
+                "description": "URL of dockerized DZ instance for remote function calls. Do not specify port here.",
                 "type": "text",
                 "value": settings["rfc_url"],
             }
@@ -898,7 +898,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
             {
                 "id": "rfc_port_http",
                 "title": "RFC HTTP port",
-                "description": "HTTP port for dockerized instance of A0.",
+                "description": "HTTP port for dockerized instance of DZ.",
                 "type": "text",
                 "value": settings["rfc_port_http"],
             }
@@ -908,7 +908,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
             {
                 "id": "rfc_port_ssh",
                 "title": "RFC SSH port",
-                "description": "SSH port for dockerized instance of A0.",
+                "description": "SSH port for dockerized instance of DZ.",
                 "type": "text",
                 "value": settings["rfc_port_ssh"],
             }
@@ -917,7 +917,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
     dev_section: SettingsSection = {
         "id": "dev",
         "title": "Development",
-        "description": "Parameters for A0 framework development. RFCs (remote function calls) are used to call functions on another A0 instance. You can develop and debug A0 natively on your local system while redirecting some functions to A0 instance in docker. This is crucial for development as A0 needs to run in standardized environment to support all features.",
+        "description": "Parameters for DZ framework development. RFCs (remote function calls) are used to call functions on another DZ instance. You can develop and debug DZ natively on your local system while redirecting some functions to DZ instance in docker. This is crucial for development as DZ needs to run in standardized environment to support all features.",
         "fields": dev_fields,
         "tab": "developer",
     }
@@ -1149,8 +1149,8 @@ def convert_out(settings: Settings) -> SettingsOutput:
     mcp_server_fields.append(
         {
             "id": "mcp_server_enabled",
-            "title": "Enable A0 MCP Server",
-            "description": "Expose DaemonZero as an SSE/HTTP MCP server. This will make this A0 instance available to MCP clients.",
+            "title": "Enable DZ MCP Server",
+            "description": "Expose DaemonZero as an SSE/HTTP MCP server. This will make this DZ instance available to MCP clients.",
             "type": "switch",
             "value": settings["mcp_server_enabled"],
         }
@@ -1169,7 +1169,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
 
     mcp_server_section: SettingsSection = {
         "id": "mcp_server",
-        "title": "A0 MCP Server",
+        "title": "DZ MCP Server",
         "description": "DaemonZero can be exposed as an SSE MCP server. See <a href=\"javascript:openModal('settings/mcp/server/example.html')\">connection example</a>.",
         "fields": mcp_server_fields,
         "tab": "mcp",
@@ -1182,7 +1182,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
         {
             "id": "a2a_server_enabled",
             "title": "Enable A2A server",
-            "description": "Expose DaemonZero as A2A server. This allows other agents to connect to A0 via A2A protocol.",
+            "description": "Expose DaemonZero as A2A server. This allows other agents to connect to DZ via A2A protocol.",
             "type": "switch",
             "value": settings["a2a_server_enabled"],
         }
@@ -1190,7 +1190,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
 
     a2a_section: SettingsSection = {
         "id": "a2a_server",
-        "title": "A0 A2A Server",
+        "title": "DZ A2A Server",
         "description": "DaemonZero can be exposed as an A2A server. See <a href=\"javascript:openModal('settings/a2a/a2a-connection.html')\">connection example</a>.",
         "fields": a2a_fields,
         "tab": "mcp",
@@ -1397,11 +1397,11 @@ def normalize_settings(settings: Settings) -> Settings:
 
 
 def _adjust_to_version(settings: Settings, default: Settings):
-    # starting with 0.9, the default prompt subfolder for agent no. 0 is agent0
-    # switch to agent0 if the old default is used from v0.8
+    # starting with 0.9, the default prompt subfolder for agent no. 0 is daemon0
+    # switch to daemon0 if the old default is used from v0.8
     if "version" not in settings or settings["version"].startswith("v0.8"):
         if "agent_profile" not in settings or settings["agent_profile"] == "default":
-            settings["agent_profile"] = "agent0"
+            settings["agent_profile"] = "daemon0"
 
 
 def _read_settings_file() -> Settings | None:
@@ -1508,7 +1508,7 @@ def get_default_settings() -> Settings:
         auth_login="",
         auth_password="",
         root_password="",
-        agent_profile="agent0",
+        agent_profile="daemon0",
         agent_memory_subdir="default",
         agent_knowledge_subdir="custom",
         rfc_auto_docker=True,
@@ -1539,14 +1539,14 @@ def get_default_settings() -> Settings:
 def _apply_settings(previous: Settings | None):
     global _settings
     if _settings:
-        from agent import AgentContext
+        from dz import AgentContext
         from initialize import initialize_agent
 
         config = initialize_agent()
         for ctx in AgentContext._contexts.values():
             ctx.config = config  # reinitialize context config with new settings
             # apply config to agents
-            agent = ctx.agent0
+            agent = ctx.daemon0
             while agent:
                 agent.config = ctx.config
                 agent = agent.get_data(agent.DATA_NAME_SUBORDINATE)

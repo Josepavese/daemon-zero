@@ -1,6 +1,6 @@
-# Agent Zero Notifications
+# DaemonZero Notifications
 
-Quick guide for using the notification system in Agent Zero.
+Quick guide for using the notification system in DaemonZero.
 
 ## Backend Usage
 

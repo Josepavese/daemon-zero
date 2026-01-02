@@ -10,7 +10,7 @@ from pathlib import Path
 import re
 
 # Configuration
-DEFAULT_IMAGE = "daemon-zero" # formerly agent0ai/agent-zero
+DEFAULT_IMAGE = "daemon-zero" # formerly daemon0ai/daemon-zero
 BASE_PORT = 50080
 HOME_DIR = Path.home()
 BASE_DATA_DIR = HOME_DIR / "daemon-zero"
@@ -113,22 +113,22 @@ def start_agent(args):
     # However, user README implies a single shared structure or maybe just one instance.
     # PROPOSAL: 
     # - Default instance maps to ~/daemon-zero/ root folders as per README.
-    # - Named instances map to ~/agent-zero/<name>/{...} to prevent conflict?
+    # - Named instances map to ~/daemon-zero/<name>/{...} to prevent conflict?
     # Let's stick to README structure for "default" and segregation for others.
     
     if safe_name == "default":
         # Default instance
         if args.ephemeral:
              data_mounts = [
-                f"-v{BASE_DATA_DIR}/config:/a0/config",
-                f"-v{BASE_DATA_DIR}/agents:/a0/agents",
+                f"-v{BASE_DATA_DIR}/config:/dz/config",
+                f"-v{BASE_DATA_DIR}/agents:/dz/agents",
             ]
         else:
             data_mounts = [
-                f"-v{BASE_DATA_DIR}/config:/a0/config",
-                f"-v{BASE_DATA_DIR}/agents:/a0/agents",
-                f"-v{BASE_DATA_DIR}/memory:/a0/memory",
-                f"-v{BASE_DATA_DIR}/knowledge:/a0/knowledge"
+                f"-v{BASE_DATA_DIR}/config:/dz/config",
+                f"-v{BASE_DATA_DIR}/agents:/dz/agents",
+                f"-v{BASE_DATA_DIR}/memory:/dz/memory",
+                f"-v{BASE_DATA_DIR}/knowledge:/dz/knowledge"
             ]
         # Ensure base dirs exist
         for d in ["config", "agents", "memory", "knowledge"]:
@@ -149,21 +149,21 @@ def start_agent(args):
 
         if args.ephemeral:
             data_mounts = [
-                f"-v{instance_path}/config:/a0/config",
-                f"-v{instance_path}/agents:/a0/agents",
-                f"-v{instance_path}/config/.env:/a0/.env",
-                f"-v{instance_path}/config/tmp:/a0/tmp",
-                f"-v{instance_path}/workspace:/a0/usr/projects"
+                f"-v{instance_path}/config:/dz/config",
+                f"-v{instance_path}/agents:/dz/agents",
+                f"-v{instance_path}/config/.env:/dz/.env",
+                f"-v{instance_path}/config/tmp:/dz/tmp",
+                f"-v{instance_path}/workspace:/dz/usr/projects"
             ]
         else:
             data_mounts = [
-                f"-v{instance_path}/config:/a0/config",
-                f"-v{instance_path}/agents:/a0/agents",
-                f"-v{instance_path}/memory:/a0/memory",
-                f"-v{instance_path}/knowledge:/a0/knowledge",
-                f"-v{instance_path}/config/.env:/a0/.env",
-                f"-v{instance_path}/config/tmp:/a0/tmp",
-                f"-v{instance_path}/workspace:/a0/usr/projects"
+                f"-v{instance_path}/config:/dz/config",
+                f"-v{instance_path}/agents:/dz/agents",
+                f"-v{instance_path}/memory:/dz/memory",
+                f"-v{instance_path}/knowledge:/dz/knowledge",
+                f"-v{instance_path}/config/.env:/dz/.env",
+                f"-v{instance_path}/config/tmp:/dz/tmp",
+                f"-v{instance_path}/workspace:/dz/usr/projects"
             ]
 
 

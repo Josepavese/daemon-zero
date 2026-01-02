@@ -1,4 +1,4 @@
-from agent import AgentContext, UserMessage
+from dz import AgentContext, UserMessage
 from python.helpers.api import ApiHandler, Request, Response
 
 from python.helpers import files, extension
@@ -29,7 +29,7 @@ class Message(ApiHandler):
             attachments = request.files.getlist("attachments")
             attachment_paths = []
 
-            upload_folder_int = "/a0/tmp/uploads"
+            upload_folder_int = "/dz/tmp/uploads"
             upload_folder_ext = files.get_abs_path("tmp/uploads") # for development environment
 
             if attachments:
@@ -62,7 +62,7 @@ class Message(ApiHandler):
         attachment_paths = data.get("attachment_paths", [])
 
         # Store attachments in agent data
-        # context.agent0.set_data("attachments", attachment_paths)
+        # context.daemon0.set_data("attachments", attachment_paths)
 
         # Prepare attachment filenames for logging
         attachment_filenames = (

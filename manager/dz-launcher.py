@@ -31,8 +31,8 @@ def get_resource_path(relative_path):
 
 # Configuration
 HOME_DIR = Path.home()
-BASE_DATA_DIR = HOME_DIR / "agent-zero"
-MANAGER_CONFIG_PATH = BASE_DATA_DIR / "manager_config.json" # Store in agent-zero dir for persistence
+BASE_DATA_DIR = HOME_DIR / "daemon-zero"
+MANAGER_CONFIG_PATH = BASE_DATA_DIR / "manager_config.json" # Store in daemon-zero dir for persistence
 app.template_folder = get_resource_path("templates")
 
 def load_manager_config():
@@ -208,7 +208,7 @@ def api_start(name):
             if v: env_content += f"{k}={v}\n"
         
         # Set default workspace
-        env_content += "WORK_DIR=/a0/usr/projects\n"
+        env_content += "WORK_DIR=/dz/usr/projects\n"
         
         if env_content:
             (config_dir / ".env").write_text(env_content)
@@ -296,7 +296,7 @@ def api_logs(name):
     # dz_manage.logs_agent is designed for interactive tailing.
     # Let's use subprocess directly here for docker logs just to get the last N lines or similar?
     # Or just call docker logs directly.
-    container_name = f"agent-zero-{dz_manage.sanitize_name(name)}"
+    container_name = f"daemon-zero-{dz_manage.sanitize_name(name)}"
     try:
         res = subprocess.run(["docker", "logs", "--tail", "1000", container_name], capture_output=True, text=True)
         logs = res.stdout + res.stderr

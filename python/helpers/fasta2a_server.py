@@ -11,7 +11,7 @@ from starlette.requests import Request
 
 # Local imports
 from python.helpers.print_style import PrintStyle
-from agent import AgentContext, UserMessage, AgentContextType
+from dz import AgentContext, UserMessage, AgentContextType
 from initialize import initialize_agent
 from python.helpers.persist_chat import remove_chat
 
@@ -231,7 +231,7 @@ class DynamicA2AProxy:
 
             provider: AgentProvider = {  # type: ignore
                 "organization": "DaemonZero",
-                "url": "https://github.com/frdel/agent-zero"
+                "url": "https://github.com/frdel/daemon-zero"
             }
 
             # Create new FastA2A app with proper thread safety

@@ -2,7 +2,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Any
 
-from agent import Agent, LoopData
+from dz import Agent, LoopData
 from python.helpers.print_style import PrintStyle
 from python.helpers.strings import sanitize_string
 

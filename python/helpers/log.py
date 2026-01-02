@@ -12,7 +12,7 @@ from python.helpers.secrets import get_secrets_manager
 
 
 if TYPE_CHECKING:
-    from agent import AgentContext
+    from dz import AgentContext
 
 T = TypeVar("T")
 
@@ -322,7 +322,7 @@ class Log:
     def _mask_recursive(self, obj: T) -> T:
         """Recursively mask secrets in nested objects."""
         try:
-            from agent import AgentContext
+            from dz import AgentContext
             secrets_mgr = get_secrets_manager(self.context or AgentContext.current())
 
             # debug helper to identify context mismatch

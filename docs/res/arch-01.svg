@@ -1158,7 +1158,7 @@
 		<use xlink:href="#SVGID_00000068660001462182668330000016856357800891916193_"  style="overflow:visible;"/>
 	</clipPath>
 	<g style="clip-path:url(#SVGID_00000010296826536423246420000008756538965811108754_);">
-		<text transform="matrix(1 0 0 1 363.35 124.01)" class="st67 st68 st69">Agent 0</text>
+		<text transform="matrix(1 0 0 1 363.35 124.01)" class="st67 st68 st69">Daemon 0</text>
 	</g>
 </g>
 <g>

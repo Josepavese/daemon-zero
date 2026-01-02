@@ -1,6 +1,6 @@
 from python.helpers.api import ApiHandler, Request, Response
 
-from agent import AgentContext, AgentContextType
+from dz import AgentContext, AgentContextType
 
 from python.helpers.task_scheduler import TaskScheduler
 from python.helpers.localization import Localization

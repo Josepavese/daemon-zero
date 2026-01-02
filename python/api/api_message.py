@@ -1,7 +1,7 @@
 import base64
 import os
 from datetime import datetime, timedelta
-from agent import AgentContext, UserMessage, AgentContextType
+from dz import AgentContext, UserMessage, AgentContextType
 from python.helpers.api import ApiHandler, Request, Response
 from python.helpers import files
 from python.helpers.print_style import PrintStyle
@@ -40,7 +40,7 @@ class ApiMessage(ApiHandler):
         # Handle attachments (base64 encoded)
         attachment_paths = []
         if attachments:
-            upload_folder_int = "/a0/tmp/uploads"
+            upload_folder_int = "/dz/tmp/uploads"
             upload_folder_ext = files.get_abs_path("tmp/uploads")
             os.makedirs(upload_folder_ext, exist_ok=True)
 

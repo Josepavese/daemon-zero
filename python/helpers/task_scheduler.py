@@ -15,7 +15,7 @@ nest_asyncio.apply()
 from crontab import CronTab
 from pydantic import BaseModel, Field, PrivateAttr
 
-from agent import Agent, AgentContext, UserMessage
+from dz import Agent, AgentContext, UserMessage
 from initialize import initialize_agent
 from python.helpers.persist_chat import save_tmp_chat
 from python.helpers.print_style import PrintStyle
@@ -804,7 +804,7 @@ class TaskScheduler:
                 # This is critical for the polling mechanism to find and stream logs
                 # Dict operations are atomic
                 # AgentContext._contexts[context.id] = context
-                agent = context.streaming_agent or context.agent0
+                agent = context.streaming_agent or context.daemon0
 
                 # Prepare attachment filenames for logging
                 attachment_filenames = []

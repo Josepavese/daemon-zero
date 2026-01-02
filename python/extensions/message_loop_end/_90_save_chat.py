@@ -1,5 +1,5 @@
 from python.helpers.extension import Extension
-from agent import LoopData, AgentContextType
+from dz import LoopData, AgentContextType
 from python.helpers import persist_chat
 
 

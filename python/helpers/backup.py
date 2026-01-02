@@ -42,7 +42,7 @@ class BackupService:
         include_patterns, exclude_patterns = self._parse_patterns(default_patterns)
 
         return {
-            "backup_name": f"agent-zero-backup-{timestamp[:10]}",
+            "backup_name": f"daemon-zero-backup-{timestamp[:10]}",
             "include_hidden": False,
             "include_patterns": include_patterns,
             "exclude_patterns": exclude_patterns,
@@ -227,11 +227,11 @@ class BackupService:
         Returns:
             List of translated patterns for the current system
         """
-        # Get the backed up agent zero root path from metadata
+        # Get the backed up DaemonZero root path from metadata
         environment_info = backup_metadata.get("environment_info", {})
         backed_up_agent_root = environment_info.get("agent_zero_root", "")
 
-        # Get current agent zero root path
+        # Get current DaemonZero root path
         current_agent_root = self.agent_zero_root
 
         # If we don't have the backed up root path, return patterns as-is
@@ -244,7 +244,7 @@ class BackupService:
 
         translated_patterns = []
         for pattern in patterns:
-            # Check if the pattern starts with the backed up agent zero root
+            # Check if the pattern starts with the backed up DaemonZero root
             if pattern.startswith(backed_up_agent_root + '/') or pattern == backed_up_agent_root:
                 # Replace the backed up root with the current root
                 relative_pattern = pattern[len(backed_up_agent_root):].lstrip('/')
@@ -349,7 +349,7 @@ class BackupService:
         include_patterns: List[str],
         exclude_patterns: List[str],
         include_hidden: bool = False,
-        backup_name: str = "agent-zero-backup"
+        backup_name: str = "daemon-zero-backup"
     ) -> str:
         """Create backup archive and return path to created file"""
 
@@ -532,7 +532,7 @@ class BackupService:
 
                 # Process each file in archive
                 for archive_path in archive_files:
-                    # Archive path is already the correct relative path (e.g., "a0/tmp/settings.json")
+                    # Archive path is already the correct relative path (e.g., "dz/tmp/settings.json")
                     original_path = archive_path
 
                     # Translate path from backed up system to current system
@@ -540,7 +540,7 @@ class BackupService:
                     target_path = self._translate_restore_path(archive_path, original_backup_metadata)
 
                     # For pattern matching, we need to use the translated path (current system)
-                    # so that patterns like "/home/rafael/a0/data/**" can match files correctly
+                    # so that patterns like "/home/rafael/dz/data/**" can match files correctly
                     translated_path_for_matching = target_path.lstrip('/')
 
                     # Check if file matches restore patterns
@@ -689,7 +689,7 @@ class BackupService:
 
                 # Process each file in archive
                 for archive_path in archive_files:
-                    # Archive path is already the correct relative path (e.g., "a0/tmp/settings.json")
+                    # Archive path is already the correct relative path (e.g., "dz/tmp/settings.json")
                     original_path = archive_path
 
                     # Translate path from backed up system to current system
@@ -697,7 +697,7 @@ class BackupService:
                     target_path = self._translate_restore_path(archive_path, original_backup_metadata)
 
                     # For pattern matching, we need to use the translated path (current system)
-                    # so that patterns like "/home/rafael/a0/data/**" can match files correctly
+                    # so that patterns like "/home/rafael/dz/data/**" can match files correctly
                     translated_path_for_matching = target_path.lstrip('/')
 
                     # Check if file matches restore patterns
@@ -784,11 +784,11 @@ class BackupService:
         Returns:
             Translated path for the current system
         """
-        # Get the backed up agent zero root path from metadata
+        # Get the backed up DaemonZero root path from metadata
         environment_info = backup_metadata.get("environment_info", {})
         backed_up_agent_root = environment_info.get("agent_zero_root", "")
 
-        # Get current agent zero root path
+        # Get current DaemonZero root path
         current_agent_root = self.agent_zero_root
 
         # If we don't have the backed up root path, use original path with leading slash
@@ -805,7 +805,7 @@ class BackupService:
         else:
             absolute_archive_path = archive_path
 
-        # Check if the archive path starts with the backed up agent zero root
+        # Check if the archive path starts with the backed up DaemonZero root
         if absolute_archive_path.startswith(backed_up_agent_root + '/') or absolute_archive_path == backed_up_agent_root:
             # Replace the backed up root with the current root
             relative_path = absolute_archive_path[len(backed_up_agent_root):].lstrip('/')

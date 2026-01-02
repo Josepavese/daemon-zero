@@ -3,6 +3,6 @@ services:
     container_name: daemon-zero
     image: Josepavese/daemon-zero:latest
     volumes:
-      - ./daemon-zero:/a0
+      - ./daemon-zero:/dz
     ports:
       - "50080:80"

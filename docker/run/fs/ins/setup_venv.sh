@@ -9,4 +9,4 @@ set -e
 # else
     # source /opt/venv/bin/activate
 # fi
-source /opt/venv-a0/bin/activate
+source /opt/venv-dz/bin/activate

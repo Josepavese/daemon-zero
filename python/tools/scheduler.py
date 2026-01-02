@@ -8,7 +8,7 @@ from python.helpers.task_scheduler import (
     TaskScheduler, ScheduledTask, AdHocTask, PlannedTask,
     serialize_task, TaskState, TaskSchedule, TaskPlan, parse_datetime, serialize_datetime
 )
-from agent import AgentContext
+from dz import AgentContext
 from python.helpers import persist_chat
 from python.helpers.projects import get_context_project_name, load_basic_project_data
 

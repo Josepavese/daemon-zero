@@ -1,4 +1,4 @@
-from agent import AgentConfig
+from dz import AgentConfig
 import models
 from python.helpers import runtime, settings, defer
 from python.helpers.print_style import PrintStyle
@@ -99,7 +99,7 @@ def initialize_agent(override_settings: dict | None = None):
     # initialize_mcp(config.mcp_servers)
 
     # import python.helpers.mcp_handler as mcp_helper
-    # import agent as agent_helper
+    # import dz as agent_helper
     # import python.helpers.print_style as print_style_helper
     # if not mcp_helper.MCPConfig.get_instance().is_initialized():
     #     try:

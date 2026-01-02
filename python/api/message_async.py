@@ -1,4 +1,4 @@
-from agent import AgentContext
+from dz import AgentContext
 from python.helpers.defer import DeferredTask
 from python.api.message import Message
 

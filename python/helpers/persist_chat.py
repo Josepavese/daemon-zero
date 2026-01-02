@@ -2,7 +2,7 @@ from collections import OrderedDict
 from datetime import datetime
 from typing import Any
 import uuid
-from agent import Agent, AgentConfig, AgentContext, AgentContextType
+from dz import Agent, AgentConfig, AgentContext, AgentContextType
 from python.helpers import files, history
 import json
 from initialize import initialize_agent
@@ -118,7 +118,7 @@ def remove_msg_files(ctxid):
 def _serialize_context(context: AgentContext):
     # serialize agents
     agents = []
-    agent = context.agent0
+    agent = context.daemon0
     while agent:
         agents.append(_serialize_agent(agent))
         agent = agent.data.get(Agent.DATA_NAME_SUBORDINATE, None)
@@ -198,17 +198,17 @@ def _deserialize_context(data):
         paused=False,
         data=data.get("data", {}),
         output_data=data.get("output_data", {}),
-        # agent0=agent0,
+        # daemon0=daemon0,
         # streaming_agent=straming_agent,
     )
 
     agents = data.get("agents", [])
-    agent0 = _deserialize_agents(agents, config, context)
-    streaming_agent = agent0
+    daemon0 = _deserialize_agents(agents, config, context)
+    streaming_agent = daemon0
     while streaming_agent and streaming_agent.number != data.get("streaming_agent", 0):
         streaming_agent = streaming_agent.data.get(Agent.DATA_NAME_SUBORDINATE, None)
 
-    context.agent0 = agent0
+    context.daemon0 = daemon0
     context.streaming_agent = streaming_agent
 
     return context

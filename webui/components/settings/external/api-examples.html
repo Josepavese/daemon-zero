@@ -1,12 +1,12 @@
 <html>
 
 <head>
-    <title>Agent Zero External API Examples</title>
+    <title>DaemonZero External API Examples</title>
 </head>
 
 <body>
     <div x-data>
-        <p>Agent Zero provides external API endpoints for integration with other applications.</p>
+        <p>DaemonZero provides external API endpoints for integration with other applications.</p>
         <p>These endpoints use API key authentication and support text messages and file attachments.</p>
 
         <!-- API Token Information -->
@@ -23,7 +23,7 @@
         <div class="api-section">
             <h2>POST /api_message</h2>
             <p style="margin: 0 0 16px 0; color: var(--color-text-secondary); font-size: 14px;">
-                Send messages to Agent Zero and receive responses. Supports text messages, file attachments, and conversation continuity.
+                Send messages to DaemonZero and receive responses. Supports text messages, file attachments, and conversation continuity.
             </p>
 
             <!-- API Reference -->
@@ -146,7 +146,7 @@
             <div style="background-color: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 6px; padding: 12px; margin: 0 0 20px 0;">
                 <p style="margin: 0 0 8px 0; color: var(--color-text-secondary); font-size: 14px;">
                     <strong>Parameters:</strong><br>
-                    • <code>paths</code> (array, required): Array of file paths to retrieve (e.g., ["/a0/tmp/uploads/file.txt"])
+                    • <code>paths</code> (array, required): Array of file paths to retrieve (e.g., ["/dz/tmp/uploads/file.txt"])
                 </p>
                 <p style="margin: 0; color: var(--color-text-secondary); font-size: 14px;">
                     <strong>Headers:</strong> <code>X-API-KEY</code> (required), <code>Content-Type: application/json</code>
@@ -562,8 +562,8 @@ async function getFiles(filePaths) {
 
 // Example 1: Get specific files
 const filePaths = [
-    "/a0/tmp/uploads/document.txt",
-    "/a0/tmp/uploads/data.json"
+    "/dz/tmp/uploads/document.txt",
+    "/dz/tmp/uploads/data.json"
 ];
 getFiles(filePaths);
 
@@ -590,7 +590,7 @@ async function attachmentWorkflow() {
         console.log('Message sent with attachment');
 
         // Step 2: Retrieve the uploaded file
-        const retrievedFiles = await getFiles(["/a0/tmp/uploads/test.txt"]);
+        const retrievedFiles = await getFiles(["/dz/tmp/uploads/test.txt"]);
 
         if (retrievedFiles && retrievedFiles["test.txt"]) {
             const originalContent = atob(retrievedFiles["test.txt"]);

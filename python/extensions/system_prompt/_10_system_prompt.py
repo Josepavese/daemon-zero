@@ -1,7 +1,7 @@
 from typing import Any
 from python.helpers.extension import Extension
 from python.helpers.mcp_handler import MCPConfig
-from agent import Agent, LoopData
+from dz import Agent, LoopData
 from python.helpers.settings import get_settings
 from python.helpers import projects
 
