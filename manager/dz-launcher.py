@@ -199,7 +199,7 @@ class SetupManager:
         self.progress = 0
         self.status_text = "Idle"
         self.error = None
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()  # Use reentrant lock to prevent deadlock during status polling
         self.log_file = Path(log_file)
         logger.debug(f"SetupManager initialized with log file: {self.log_file}")
 
