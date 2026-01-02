@@ -452,11 +452,20 @@ def api_trigger_image_pull():
                             setup_manager.progress = min(90, progress)
             
             setup_manager.progress = 95
-            setup_manager.add_log("[INFO] Tagging image as 'daemon-zero'...")
+            setup_manager.add_log("[INFO] Finalizing and tagging image...")
             
-            # Tag the image
-            image = client.images.get(image_name)
-            image.tag('daemon-zero', 'latest')
+            # Wait a moment for Docker to finalize the image
+            time.sleep(2)
+            
+            # Tag the image using subprocess (more reliable than SDK for tagging)
+            tag_result = subprocess.run(
+                ["docker", "tag", image_name, "daemon-zero:latest"],
+                capture_output=True, text=True
+            )
+            
+            if tag_result.returncode != 0:
+                setup_manager.finish_task(False, f"Failed to tag image: {tag_result.stderr}")
+                return
             
             setup_manager.progress = 100
             setup_manager.finish_task(True, "Docker image downloaded and ready!")
