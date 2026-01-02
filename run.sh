@@ -19,9 +19,10 @@ if ! python3 -m venv --help > /dev/null 2>&1; then
     fi
 fi
 
-# 2. Check if .venv exists, if not create it
-if [ ! -d "manager/.venv" ]; then
-    echo "First run detected. Setting up virtual environment..."
+# 2. Check if .venv exists and is valid, if not create it
+if [ ! -f "manager/.venv/bin/activate" ]; then
+    echo "Virtual environment missing or broken. Setting up..."
+    rm -rf manager/.venv
     python3 -m venv manager/.venv
     if [ ! -f "manager/.venv/bin/activate" ]; then
         echo "[ERROR] Failed to create virtual environment in manager/.venv"
